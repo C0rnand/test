@@ -100,11 +100,43 @@ export type NewOrder = Pick<Order, "customer_name" | "email" | "quantity"> & {
 const PRODUCTS: Product[] = [
   {
     id: 1,
-    name: "Tatra Budič",
+    name: "Tatra Budič Classic",
     description:
       "Prírodný energetický nápoj inšpirovaný Vysokými Tatrami a tradíciou horských bylín.",
     ingredients: ["mäta", "horské byliny", "guarana", "extrakt zo zeleného čaju"],
-    image_url: "/product-can.svg",
+    image_url: "/cans/classic.svg",
+    price: 2.9,
+  },
+  {
+    id: 2,
+    name: "Tatra Budič Exotic",
+    description:
+      "Klasické zloženie Tatra Budič obohatené o yuzu a liči – citrusovo-sladký, exotickejší profil.",
+    ingredients: [
+      "mäta",
+      "horské byliny",
+      "guarana",
+      "extrakt zo zeleného čaju",
+      "yuzu",
+      "liči",
+    ],
+    image_url: "/cans/exotic.svg",
+    price: 2.9,
+  },
+  {
+    id: 3,
+    name: "Tatra Budič Tropical",
+    description:
+      "Klasické zloženie Tatra Budič obohatené o mango a marakuju – ovocnejšia, tropická verzia.",
+    ingredients: [
+      "mäta",
+      "horské byliny",
+      "guarana",
+      "extrakt zo zeleného čaju",
+      "mango",
+      "marakuja",
+    ],
+    image_url: "/cans/tropical.svg",
     price: 2.9,
   },
 ];

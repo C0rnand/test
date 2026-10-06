@@ -72,7 +72,8 @@ tatra-budic/
 │   ├── HeroVideo.tsx            # <video> vrstva hero sekcie (client, rešpektuje reduced motion)
 │   ├── KPISection.tsx           # "Ako meriame úspech" – 3 KPI dashboard karty
 │   ├── MountainBackground.tsx   # dekoratívne SVG pozadie hôr (KPI sekcia)
-│   ├── ProductSection.tsx       # prezentácia produktu + koncept etikety
+│   ├── Ponuka.tsx               # "Naša ponuka" – 3 príchute (Classic/Exotic/Tropical)
+│   ├── ProductSection.tsx       # prezentácia produktu (zloženie, cena)
 │   ├── Reveal.tsx               # scroll-reveal wrapper (IntersectionObserver)
 │   ├── Team.tsx                 # "Náš tím" – 4 členovia tímu
 │   └── Timeline.tsx             # "Realizácia projektu" – iteratívny model
@@ -82,12 +83,14 @@ tatra-budic/
 │   └── db.ts                    # dátová vrstva – pripravená na napojenie DB
 ├── public/
 │   ├── logo-mark.svg            # vektorový brand mark (shield + tatranské vrchy + blesk)
-│   ├── product-can.svg          # ilustrácia plechovky
+│   ├── cans/
+│   │   ├── classic.svg          # ilustrácia plechovky – Tatra Budič Classic
+│   │   ├── exotic.svg           # ilustrácia plechovky – Tatra Budič Exotic
+│   │   └── tropical.svg         # ilustrácia plechovky – Tatra Budič Tropical
 │   └── media/
 │       ├── hero-atmosphere.mp4  # ambientná slučka na pozadí hero sekcie (H.264)
 │       ├── hero-atmosphere.webm # tá istá slučka (VP9, menší súbor)
 │       ├── hero-poster.jpg/.webp# statický poster frame (LCP, no-JS, reduced motion)
-│       ├── label-concept.jpg/.webp # koncept etikety v sekcii Produkt
 │       └── grain.svg            # jemná textúra na tmavých sekciách
 ├── .env.example                 # vzor premenných prostredia pre DB
 ├── next.config.mjs
@@ -119,7 +122,9 @@ npm run lint    # ESLint kontrola
 ## 5. Sekcie webu
 
 - **Hero** – názov projektu, akronym, anotácia, ambientné video na pozadí, CTA
-- **Produkt** – zloženie, objem, cena (dáta z `lib/db.ts`, `getProducts()`) + koncept etikety
+- **Produkt** – zloženie, objem, cena (dáta z `lib/db.ts`, `getProducts()`)
+- **Naša ponuka** *(nové)* – 3 príchute vedľa seba (Classic / Exotic / Tropical),
+  každá s vlastnou ilustráciou plechovky a prísadami navyše
 - **Výhody** – prírodné byliny, energia bez pádu, slovenská inšpirácia, udržateľnosť
 - **O nás** – príbeh startupu, cieľová skupina, kľúčové štatistiky
 - **Náš tím** *(nové)* – 4 členovia tímu s rolami a ikonami
@@ -144,8 +149,17 @@ toho:
   s tatranskými vrchmi a bleskom, vo farbách webu (smaragdová/biela/strieborná
   namiesto zlatej z mockupu, nech sedí so zvyškom UI). Používa sa v navigácii,
   vo footeri a ako favicon.
-- Pôvodný mockup je použitý **ako koncept etikety** v sekcii Produkt – zarámovaný,
-  s popiskom, že ide o skorý grafický koncept, nie finálnu obchodnú etiketu.
+- Pôvodný mockup pôvodne slúžil aj ako zarámovaný "koncept etikety" v sekcii
+  Produkt; tento náhľad bol neskôr z webu odstránený, aby sa sekcia sústredila
+  len na zloženie produktu. Mockup tak zostáva len inšpiráciou pre
+  `logo-mark.svg`, nie viditeľnou súčasťou webu.
+- Tri samostatné **ilustrácie plechoviek** (`public/cans/classic.svg`,
+  `exotic.svg`, `tropical.svg`) boli prekreslené tak, aby vizuálne zodpovedali
+  dizajnu z pôvodných referenčných obrázkov – zlatý emblém tatranských vrchov,
+  zelený žiariaci blesk, nápis "TATRA BUDIČ" – ale s opraveným, čitateľným
+  textom a správnym objemom 330 ml namiesto nekonzistentných 500 ml / 300 ml
+  z pôvodného GIFu. Zobrazujú sa v sekcii **Naša ponuka**, nie v sekcii
+  Produkt – tá zostáva zameraná len na zloženie základnej (Classic) verzie.
 
 **GIF (plechovka na skale, 1280×720, 240 snímok, 29 MB).** Pôvodný súbor mal
 dva problémy: (1) drobné texty na etikete sú AI-generovaná "kaša" (napr.
@@ -181,17 +195,17 @@ výkon stránky. Riešenie:
 - **Scroll reveal:** `components/Reveal.tsx` – jeden tlmený efekt (fade + posun),
   nie kaskáda animácií na každom prvku; rešpektuje `prefers-reduced-motion`.
 - **Farebný rytmus sekcií** je zámerný, nie striedanie pre efekt: Hero (video)
-  → Produkt (biela) → Výhody (svetlá) → O nás (zelená tma) → Tím (čierna/striebro)
-  → Realizácia (biela, čitateľná pre dlhší text) → KPI (zelená tma, dashboard)
-  → Kontakt (biela, pokojná pre formulár).
+  → Produkt (biela) → Naša ponuka (svetlá) → Výhody (svetlá) → O nás (zelená tma)
+  → Tím (čierna/striebro) → Realizácia (biela, čitateľná pre dlhší text)
+  → KPI (zelená tma, dashboard) → Kontakt (biela, pokojná pre formulár).
 
 ## 8. Databáza
 
 Aplikácia **funguje aj bez pripojenej databázy** – `lib/db.ts` používa dátové
-úložisko v pamäti (mock dáta pre produkt, objednávky sa ukladajú počas behu
-servera). Je pripravená tak, aby sa dala pripojiť na skutočnú PostgreSQL
-databázu len úpravou tohto jedného súboru – presne to je aj náplň **Iterácie 2**
-v sekcii "Realizácia projektu" na webe.
+úložisko v pamäti (mock dáta pre 3 produkty – Classic/Exotic/Tropical,
+objednávky sa ukladajú počas behu servera). Je pripravená tak, aby sa dala
+pripojiť na skutočnú PostgreSQL databázu len úpravou tohto jedného súboru –
+presne to je aj náplň **Iterácie 2** v sekcii "Realizácia projektu" na webe.
 
 ### Návrh schémy (`database/schema.sql`)
 

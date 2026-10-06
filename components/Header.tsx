@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 
 const LINKS = [
   { href: "#produkt", label: "Produkt" },
+  { href: "#ponuka", label: "Ponuka" },
   { href: "#vyhody", label: "Výhody" },
+  { href: "#o-nas", label: "O nás" },
   { href: "#tim", label: "Tím" },
   { href: "#realizacia", label: "Realizácia" },
   { href: "#kpi", label: "KPI" },
-  { href: "#o-nas", label: "O nás" },
   { href: "#kontakt", label: "Kontakt" },
 ];
 

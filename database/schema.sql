@@ -32,13 +32,28 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE INDEX IF NOT EXISTS idx_orders_email      ON orders (email);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders (created_at);
 
--- Počiatočné dáta – produkt Tatra Budič
+-- Počiatočné dáta – ponuka príchutí Tatra Budič
 INSERT INTO products (name, description, ingredients, image_url, price)
-VALUES (
-    'Tatra Budič',
-    'Prírodný energetický nápoj inšpirovaný Vysokými Tatrami a tradíciou horských bylín.',
-    ARRAY['mäta', 'horské byliny', 'guarana', 'extrakt zo zeleného čaju'],
-    '/product-can.svg',
-    2.90
-)
+VALUES
+    (
+        'Tatra Budič Classic',
+        'Prírodný energetický nápoj inšpirovaný Vysokými Tatrami a tradíciou horských bylín.',
+        ARRAY['mäta', 'horské byliny', 'guarana', 'extrakt zo zeleného čaju'],
+        '/cans/classic.svg',
+        2.90
+    ),
+    (
+        'Tatra Budič Exotic',
+        'Klasické zloženie Tatra Budič obohatené o yuzu a liči – citrusovo-sladký, exotickejší profil.',
+        ARRAY['mäta', 'horské byliny', 'guarana', 'extrakt zo zeleného čaju', 'yuzu', 'liči'],
+        '/cans/exotic.svg',
+        2.90
+    ),
+    (
+        'Tatra Budič Tropical',
+        'Klasické zloženie Tatra Budič obohatené o mango a marakuju – ovocnejšia, tropická verzia.',
+        ARRAY['mäta', 'horské byliny', 'guarana', 'extrakt zo zeleného čaju', 'mango', 'marakuja'],
+        '/cans/tropical.svg',
+        2.90
+    )
 ON CONFLICT DO NOTHING;

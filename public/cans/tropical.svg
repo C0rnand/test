@@ -1,0 +1,74 @@
+<svg viewBox="0 0 300 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="canTitle">
+  <title id="canTitle">Plechovka Tatra Budič Tropical</title>
+  <defs>
+    <linearGradient id="canBody" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#254F39" />
+      <stop offset="55%" stop-color="#2F6448" />
+      <stop offset="100%" stop-color="#122A1D" />
+    </linearGradient>
+    <linearGradient id="canShine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22" />
+      <stop offset="18%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="rimShade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E1EDE4" />
+      <stop offset="100%" stop-color="#96C0A6" />
+    </linearGradient>
+    <linearGradient id="goldFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F0D28A" />
+      <stop offset="100%" stop-color="#B8863D" />
+    </linearGradient>
+    <linearGradient id="boltFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6EE7B7" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+    <filter id="boltGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="4.2" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <ellipse cx="150" cy="524" rx="88" ry="14" fill="#0A2118" opacity="0.25" />
+
+  <rect x="42" y="58" width="216" height="440" rx="32" fill="url(#canBody)" />
+  <rect x="42" y="58" width="58" height="440" rx="28" fill="url(#canShine)" />
+
+  <ellipse cx="150" cy="498" rx="108" ry="18" fill="#0A2118" />
+
+  <ellipse cx="150" cy="58" rx="108" ry="20" fill="url(#rimShade)" />
+  <ellipse cx="150" cy="52" rx="96" ry="16" fill="#F1F6F2" />
+  <ellipse cx="150" cy="52" rx="78" ry="10" fill="#C3DCCC" opacity="0.6" />
+
+  <rect x="139" y="30" width="22" height="10" rx="5" fill="#8FAE9B" opacity="0.8" />
+  <circle cx="150" cy="35" r="3" fill="#0A2118" opacity="0.5" />
+
+  <g transform="translate(150,170)">
+    <path d="M-82 50 L-40 -26 L-6 18 L-6 50 Z" fill="#6B5429" opacity="0.55" />
+    <path d="M10 22 L46 -24 L84 50 L10 50 Z" fill="#6B5429" opacity="0.55" />
+    <path d="M-34 50 L2 -58 L38 50 Z" fill="#8B6A34" opacity="0.85" />
+
+    <g stroke="url(#goldFill)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M-82 50 L-40 -26 L-6 18" />
+      <path d="M10 22 L46 -24 L84 50" />
+      <path d="M-34 50 L2 -58 L38 50" />
+    </g>
+
+    <path d="M8 -62 L-15 8 L-2 8 L-11 60 L21 -12 L5 -12 Z" fill="url(#boltFill)" filter="url(#boltGlow)" />
+  </g>
+
+  <text x="150" y="288" text-anchor="middle" font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="42" letter-spacing="1" fill="#F5FAF7" stroke="#0A2118" stroke-width="3" style="paint-order: stroke;">TATRA</text>
+  <text x="150" y="333" text-anchor="middle" font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="42" letter-spacing="1" fill="#F5FAF7" stroke="#0A2118" stroke-width="3" style="paint-order: stroke;">BUDIČ</text>
+
+  <text x="150" y="364" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="24" letter-spacing="4" fill="url(#goldFill)">TROPICAL</text>
+
+  <text x="150" y="390" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="14" letter-spacing="3" fill="#E1EDE4">ENERGY DRINK</text>
+
+  <line x1="112" y1="408" x2="188" y2="408" stroke="#437F5F" stroke-width="1.5" />
+
+  <text x="150" y="430" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10.5" letter-spacing="1.5" fill="#C3DCCC">GUARANA · MANGO · MARAKUJA</text>
+
+  <text x="150" y="468" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" letter-spacing="1" fill="#96C0A6">330 ml</text>
+</svg>

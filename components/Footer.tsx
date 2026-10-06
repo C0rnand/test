@@ -1,11 +1,12 @@
 const LINKS = [
   { href: "#domov", label: "Domov" },
   { href: "#produkt", label: "Produkt" },
+  { href: "#ponuka", label: "Ponuka" },
   { href: "#vyhody", label: "Výhody" },
+  { href: "#o-nas", label: "O nás" },
   { href: "#tim", label: "Náš tím" },
   { href: "#realizacia", label: "Realizácia" },
   { href: "#kpi", label: "KPI" },
-  { href: "#o-nas", label: "O nás" },
   { href: "#kontakt", label: "Kontakt" },
 ];
 

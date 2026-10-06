@@ -33,7 +33,7 @@ export default async function ProductSection() {
           </a>
         </Reveal>
 
-        <Reveal delayMs={120} className="flex flex-col gap-6">
+        <Reveal delayMs={120}>
           {/* Nutrition-facts-style spec panel — a deliberate nod to real
               supplement/energy-drink packaging, not a generic card label. */}
           <div className="rounded-lg border border-forest-200 p-6 sm:p-8">
@@ -59,23 +59,6 @@ export default async function ProductSection() {
               </div>
             </div>
           </div>
-
-          {/* Early label concept art — shown framed/captioned rather than
-              passed off as final packaging (see README). */}
-          <figure className="overflow-hidden rounded-lg border border-forest-200">
-            <picture>
-              <source srcSet="/media/label-concept.webp" type="image/webp" />
-              <img
-                src="/media/label-concept.jpg"
-                alt="Prvý grafický koncept etikety Tatra Budič – zlatý emblém s horami a bleskom na tmavozelenom podklade"
-                className="w-full"
-                loading="lazy"
-              />
-            </picture>
-            <figcaption className="border-t border-forest-100 bg-forest-50 px-4 py-2.5 text-xs text-forest-500">
-              Koncept etikety z prípravnej fázy brandingu — nejde o finálnu obchodnú grafiku.
-            </figcaption>
-          </figure>
         </Reveal>
       </div>
     </section>
