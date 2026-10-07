@@ -2,7 +2,7 @@ import Reveal from "./Reveal";
 
 const ITERATIONS = [
   {
-    label: "Iterácia 1",
+    label: "Modul 1",
     title: "Statické používateľské rozhranie",
     description:
       "Vytvorenie statického používateľského rozhrania pomocou Next.js a Tailwind CSS vrátane marketingového webu.",
@@ -10,7 +10,7 @@ const ITERATIONS = [
     statusTone: "done" as const,
   },
   {
-    label: "Iterácia 2",
+    label: "Modul 2",
     title: "Databáza produktov a objednávok",
     description:
       "Integrácia PostgreSQL databázy (preferovane Neon alebo Supabase PostgreSQL) pre správu produktov a objednávok.",
@@ -18,7 +18,7 @@ const ITERATIONS = [
     statusTone: "ready" as const,
   },
   {
-    label: "Iterácia 3",
+    label: "Modul 3",
     title: "Autentifikácia a administrácia",
     description:
       "Implementácia autentifikácie a administrátorského rozhrania pre správu objednávok.",
@@ -45,7 +45,7 @@ export default function Timeline() {
             Pre vývoj aplikácie Tatra Budič (TABU) sme zvolili <strong className="font-semibold text-forest-950">inkrementálny model</strong>,
             pretože máme jasnú víziu o cieľovej funkcionalite, no z technologického hľadiska je
             najefektívnejšie systém budovať po ucelených funkčných celkoch (prírastkoch). Po
-            každej iterácii existuje funkčná a nasaditeľná verzia systému.
+            každom module existuje funkčná a nasaditeľná verzia systému.
           </p>
         </Reveal>
 
