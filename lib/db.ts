@@ -104,7 +104,7 @@ const PRODUCTS: Product[] = [
     description:
       "Prírodný energetický nápoj inšpirovaný Vysokými Tatrami a tradíciou horských bylín.",
     ingredients: ["mäta", "horské byliny", "guarana", "extrakt zo zeleného čaju"],
-    image_url: "/cans/classic.svg",
+    image_url: "/cans/classic.webp",
     price: 2.9,
   },
   {
@@ -120,7 +120,7 @@ const PRODUCTS: Product[] = [
       "yuzu",
       "liči",
     ],
-    image_url: "/cans/exotic.svg",
+    image_url: "/cans/exotic.webp",
     price: 2.9,
   },
   {
@@ -136,7 +136,7 @@ const PRODUCTS: Product[] = [
       "mango",
       "marakuja",
     ],
-    image_url: "/cans/tropical.svg",
+    image_url: "/cans/tropical.webp",
     price: 2.9,
   },
 ];

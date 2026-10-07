@@ -39,21 +39,21 @@ VALUES
         'Tatra Budič Classic',
         'Prírodný energetický nápoj inšpirovaný Vysokými Tatrami a tradíciou horských bylín.',
         ARRAY['mäta', 'horské byliny', 'guarana', 'extrakt zo zeleného čaju'],
-        '/cans/classic.svg',
+        '/cans/classic.webp',
         2.90
     ),
     (
         'Tatra Budič Exotic',
         'Klasické zloženie Tatra Budič obohatené o yuzu a liči – citrusovo-sladký, exotickejší profil.',
         ARRAY['mäta', 'horské byliny', 'guarana', 'extrakt zo zeleného čaju', 'yuzu', 'liči'],
-        '/cans/exotic.svg',
+        '/cans/exotic.webp',
         2.90
     ),
     (
         'Tatra Budič Tropical',
         'Klasické zloženie Tatra Budič obohatené o mango a marakuju – ovocnejšia, tropická verzia.',
         ARRAY['mäta', 'horské byliny', 'guarana', 'extrakt zo zeleného čaju', 'mango', 'marakuja'],
-        '/cans/tropical.svg',
+        '/cans/tropical.webp',
         2.90
     )
 ON CONFLICT DO NOTHING;

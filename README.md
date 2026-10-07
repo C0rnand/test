@@ -84,9 +84,9 @@ tatra-budic/
 ├── public/
 │   ├── logo-mark.svg            # vektorový brand mark (shield + tatranské vrchy + blesk)
 │   ├── cans/
-│   │   ├── classic.svg          # ilustrácia plechovky – Tatra Budič Classic
-│   │   ├── exotic.svg           # ilustrácia plechovky – Tatra Budič Exotic
-│   │   └── tropical.svg         # ilustrácia plechovky – Tatra Budič Tropical
+│   │   ├── classic.webp         # produktová fotka – Tatra Budič Classic (bez pozadia)
+│   │   ├── exotic.webp          # produktová fotka – Tatra Budič Exotic (bez pozadia)
+│   │   └── tropical.webp        # produktová fotka – Tatra Budič Tropical (bez pozadia)
 │   └── media/
 │       ├── hero-atmosphere.mp4  # ambientná slučka na pozadí hero sekcie (H.264)
 │       ├── hero-atmosphere.webm # tá istá slučka (VP9, menší súbor)
@@ -153,13 +153,14 @@ toho:
   Produkt; tento náhľad bol neskôr z webu odstránený, aby sa sekcia sústredila
   len na zloženie produktu. Mockup tak zostáva len inšpiráciou pre
   `logo-mark.svg`, nie viditeľnou súčasťou webu.
-- Tri samostatné **ilustrácie plechoviek** (`public/cans/classic.svg`,
-  `exotic.svg`, `tropical.svg`) boli prekreslené tak, aby vizuálne zodpovedali
-  dizajnu z pôvodných referenčných obrázkov – zlatý emblém tatranských vrchov,
-  zelený žiariaci blesk, nápis "TATRA BUDIČ" – ale s opraveným, čitateľným
-  textom a správnym objemom 330 ml namiesto nekonzistentných 500 ml / 300 ml
-  z pôvodného GIFu. Zobrazujú sa v sekcii **Naša ponuka**, nie v sekcii
-  Produkt – tá zostáva zameraná len na zloženie základnej (Classic) verzie.
+- Tri **produktové fotky plechoviek** (`public/cans/classic.webp`,
+  `exotic.webp`, `tropical.webp`) sú priamo dodané render obrázky (nie
+  prekreslené) – pozadie (jednoliate čierne) bolo odstránené hromadným
+  spracovaním (flood-fill priehľadnosti od okrajov snímky + mäkký prechod na
+  hrane plechovky, aby rez nebol zubatý), orezané na samotnú plechovku a
+  skomprimované do `.webp` (~62 kB/kus namiesto pôvodných ~1,5 MB `.jpg`).
+  Zobrazujú sa v sekcii **Naša ponuka**, nie v sekcii Produkt – tá zostáva
+  zameraná len na zloženie základnej (Classic) verzie.
 
 **GIF (plechovka na skale, 1280×720, 240 snímok, 29 MB).** Pôvodný súbor mal
 dva problémy: (1) drobné texty na etikete sú AI-generovaná "kaša" (napr.
