@@ -42,7 +42,7 @@ export default function Timeline() {
             Realizácia projektu
           </h2>
           <p className="mt-5 leading-relaxed text-forest-700">
-            Pre vývoj aplikácie Tatra Budič (TABU) sme zvolili <strong className="font-semibold text-forest-950">iteratívny model</strong>,
+            Pre vývoj aplikácie Tatra Budič (TABU) sme zvolili <strong className="font-semibold text-forest-950">inkrementálny model</strong>,
             pretože máme jasnú víziu o cieľovej funkcionalite, no z technologického hľadiska je
             najefektívnejšie systém budovať po ucelených funkčných celkoch (prírastkoch). Po
             každej iterácii existuje funkčná a nasaditeľná verzia systému.
