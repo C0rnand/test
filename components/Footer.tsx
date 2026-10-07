@@ -42,7 +42,7 @@ export default function Footer() {
 
         <div className="mt-10 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-forest-400 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Tatra Budič (TABU). Všetky práva vyhradené.</p>
-          <p>Vytvorené ako univerzitný semestrálny projekt postavený na Next.js a Tailwind CSS.</p>
+          <p>Vyvinuté v spolupráci s AI asistentom Claude ako univerzitný semestrálny projekt postavený na Next.js a Tailwind CSS.</p>
         </div>
       </div>
     </footer>
