@@ -202,11 +202,13 @@ výkon stránky. Riešenie:
 
 ## 8. Databáza
 
-Aplikácia **funguje aj bez pripojenej databázy** – `lib/db.ts` používa dátové
-úložisko v pamäti (mock dáta pre 3 produkty – Classic/Exotic/Tropical,
-objednávky sa ukladajú počas behu servera). Je pripravená tak, aby sa dala
-pripojiť na skutočnú PostgreSQL databázu len úpravou tohto jedného súboru –
-presne to je aj náplň **Iterácie 2** v sekcii "Realizácia projektu" na webe.
+`lib/db.ts` je **naozaj prepojené so Supabase** (PostgreSQL) – `getProducts()`,
+`createOrder()` aj `getOrders()` čítajú a zapisujú priamo do Supabase databázy,
+len čo sú nastavené prístupové premenné (pozri nižšie). Pokiaľ nastavené nie
+sú (napr. pred pripojením databázy), appka automaticky spadne späť na dátové
+úložisko v pamäti (mock dáta pre 3 produkty – Classic/Exotic/Tropical), takže
+nikdy nepadne – len nič trvalo neuloží. Presne toto je náplň **Iterácie 2**
+v sekcii "Realizácia projektu" na webe.
 
 ### Návrh schémy (`database/schema.sql`)
 
@@ -232,27 +234,35 @@ CREATE TABLE orders (
 );
 ```
 
-### Možnosť A – Vercel Postgres
+### Pripojenie Supabase (kód je už hotový, len treba databázu pripojiť)
 
-1. V projekte na [vercel.com](https://vercel.com) otvorte záložku **Storage**
-   → **Create Database** → **Postgres**, prepojte ju s projektom.
-2. Vercel automaticky doplní premenné `POSTGRES_URL` a pod. do nastavení
-   projektu (a do `.env.local`, ak si databázu stiahnete cez `vercel env pull`).
-3. Spustite `database/schema.sql` (napr. cez záložku "Query" v dashboarde,
-   alebo `psql "$POSTGRES_URL" -f database/schema.sql`).
-4. `npm install @vercel/postgres`.
-5. V `lib/db.ts` nahraďte telo `getProducts` / `createOrder` verziou so
-   `sql` klientom – presný kód nájdete priamo v komentári na začiatku súboru.
+**Cez Vercel integráciu (odporúčané – netreba ručne kopírovať kľúče):**
 
-### Možnosť B – Supabase (aj Neon funguje analogicky)
+1. V Supabase projekte: záložka **SQL Editor** → vložiť a spustiť celý obsah
+   `database/schema.sql` (vytvorí tabuľky `products`/`orders` a naplní 3
+   produkty).
+2. Vo Vercel projekte: **Settings → Integrations** (alebo **Storage → Connect
+   Database**) → pridať **Supabase** a vybrať tento Supabase projekt. Vercel
+   sám doplní premenné prostredia (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`…).
+3. Vercel po pripojení zvyčajne sám spustí nový deploy. Od tej chvíle appka
+   číta produkty aj ukladá objednávky priamo do Supabase – overíte v
+   Supabase: **Table Editor → orders**.
 
-1. Vytvorte projekt na [supabase.com](https://supabase.com) (alebo [neon.tech](https://neon.tech)).
-2. V **SQL Editor** spustite obsah `database/schema.sql`.
-3. V **Project Settings → API** skopírujte URL a kľúče do `.env.local`
-   (pozri `.env.example`).
-4. `npm install @supabase/supabase-js`.
-5. V `lib/db.ts` nahraďte telo funkcií verziou so Supabase klientom – kód je
-   pripravený v komentári na začiatku súboru.
+**Ručne (bez Vercel integrácie):** vytvorte Supabase projekt, spustite
+`database/schema.sql` v SQL Editore, potom skopírujte URL a kľúč z
+**Project Settings → API** do premenných prostredia vo Vercel (**Settings →
+Environment Variables**) alebo lokálne do `.env.local` – presné názvy
+premenných (podporujeme starší aj novší Supabase systém kľúčov) sú v
+`.env.example`.
+
+Balík `@supabase/supabase-js` je už v `package.json` – pri ďalšom
+`npm install`/Vercel builde sa nainštaluje automaticky, nič netreba pridávať
+ručne.
+
+*Vercel Postgres alebo Neon by fungovali tiež (obe sú PostgreSQL), ale
+vyžadujú iný klient (`@vercel/postgres` / `postgres` namiesto
+`@supabase/supabase-js`) – kód v `lib/db.ts` je momentálne napísaný
+konkrétne pre Supabase.*
 
 ## 9. KPI – odôvodnenie
 
