@@ -75,8 +75,10 @@ tatra-budic/
 │   ├── Ponuka.tsx               # "Naša ponuka" – 3 príchute (Classic/Exotic/Tropical)
 │   ├── ProductSection.tsx       # prezentácia produktu (zloženie, cena)
 │   ├── Reveal.tsx               # scroll-reveal wrapper (IntersectionObserver)
+│   ├── SWOT.tsx                 # "SWOT analýza" – 4 kvadranty (S/W/O/T)
 │   ├── Team.tsx                 # "Náš tím" – 4 členovia tímu
-│   └── Timeline.tsx             # "Realizácia projektu" – iteratívny model
+│   ├── Timeline.tsx             # "Realizácia projektu" – inkrementálny model (Modul 1/2/3)
+│   └── ZadaniaIntro.tsx         # spoločný nadpis "Zadania" (Realizácia/KPI/SWOT/Gantt)
 ├── database/
 │   └── schema.sql               # návrh DB schémy (PostgreSQL)
 ├── lib/
@@ -128,8 +130,14 @@ npm run lint    # ESLint kontrola
 - **Výhody** – prírodné byliny, energia bez pádu, slovenská inšpirácia, udržateľnosť
 - **O nás** – príbeh startupu, cieľová skupina, kľúčové štatistiky
 - **Náš tím** *(nové)* – 4 členovia tímu s rolami a ikonami
-- **Realizácia projektu** *(nové)* – iteratívny model vývoja, 3 iterácie, stav každej z nich
-- **Ako meriame úspech** *(nové)* – 3 KPI karty v dashboard štýle (pozri sekciu 9)
+- **Zadania** *(nové, zjednotená navigácia)* – spoločný nadpis pre priebežné
+  výstupy projektu; v navigácii je to jeden odkaz (`#zadania`), na stránke pod
+  ním postupne pribúdajú:
+  - **Realizácia projektu** – inkrementálny model vývoja, 3 moduly, stav každého z nich
+  - **Ako meriame úspech** – 3 KPI karty v dashboard štýle (pozri sekciu 9)
+  - **SWOT analýza** *(nové)* – 4 kvadranty (Silné/Slabé stránky, Príležitosti,
+    Hrozby), každý so 4 konkrétnymi bodmi k projektu TABU
+  - *(plánované)* Ganttov diagram
 - **Kontakt / objednávka** – formulár (meno, email, množstvo, správa) →
   `POST /api/orders`; **platby nie sú implementované** (v súlade so zadaním)
 
@@ -197,8 +205,9 @@ výkon stránky. Riešenie:
   nie kaskáda animácií na každom prvku; rešpektuje `prefers-reduced-motion`.
 - **Farebný rytmus sekcií** je zámerný, nie striedanie pre efekt: Hero (video)
   → Produkt (biela) → Naša ponuka (svetlá) → Výhody (svetlá) → O nás (zelená tma)
-  → Tím (čierna/striebro) → Realizácia (biela, čitateľná pre dlhší text)
-  → KPI (zelená tma, dashboard) → Kontakt (biela, pokojná pre formulár).
+  → Tím (čierna/striebro) → Zadania: Realizácia (biela, čitateľná pre dlhší text)
+  → KPI (zelená tma, dashboard) → SWOT (biela, 4 farebne odlíšené kvadranty)
+  → Kontakt (biela, pokojná pre formulár).
 
 ## 8. Databáza
 
@@ -207,7 +216,7 @@ výkon stránky. Riešenie:
 len čo sú nastavené prístupové premenné (pozri nižšie). Pokiaľ nastavené nie
 sú (napr. pred pripojením databázy), appka automaticky spadne späť na dátové
 úložisko v pamäti (mock dáta pre 3 produkty – Classic/Exotic/Tropical), takže
-nikdy nepadne – len nič trvalo neuloží. Presne toto je náplň **Iterácie 2**
+nikdy nepadne – len nič trvalo neuloží. Presne toto je náplň **Modulu 2**
 v sekcii "Realizácia projektu" na webe.
 
 ### Návrh schémy (`database/schema.sql`)
