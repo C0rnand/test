@@ -211,13 +211,14 @@ výkon stránky. Riešenie:
 
 ## 8. Databáza
 
-`lib/db.ts` je **naozaj prepojené so Supabase** (PostgreSQL) – `getProducts()`,
-`createOrder()` aj `getOrders()` čítajú a zapisujú priamo do Supabase databázy,
-len čo sú nastavené prístupové premenné (pozri nižšie). Pokiaľ nastavené nie
-sú (napr. pred pripojením databázy), appka automaticky spadne späť na dátové
-úložisko v pamäti (mock dáta pre 3 produkty – Classic/Exotic/Tropical), takže
-nikdy nepadne – len nič trvalo neuloží. Presne toto je náplň **Modulu 2**
-v sekcii "Realizácia projektu" na webe.
+`lib/db.ts` má **pripravený reálny zápis do Supabase** (PostgreSQL) – kód pre
+`getProducts()`, `createOrder()` aj `getOrders()` je plne funkčný a začne
+čítať a zapisovať priamo do Supabase databázy hneď, ako budú nastavené
+prístupové premenné (pozri nižšie). **Databázu zatiaľ nemáme pripojenú** –
+appka preto momentálne beží na dátovom úložisku v pamäti (mock dáta pre
+3 produkty – Classic/Exotic/Tropical), takže nikdy nepadne, len nič trvalo
+neuloží. Presne toto je náplň **Modulu 2** v sekcii "Realizácia projektu" na
+webe.
 
 ### Návrh schémy (`database/schema.sql`)
 

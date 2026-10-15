@@ -13,9 +13,9 @@ const ITERATIONS = [
     label: "Modul 2",
     title: "Databáza produktov a objednávok",
     description:
-      "Supabase (PostgreSQL) integrácia pre produkty a objednávky – po pripojení databázy appka automaticky číta a zapisuje reálne dáta namiesto dočasných mock dát.",
-    status: "Hotovo",
-    statusTone: "done" as const,
+      "Supabase (PostgreSQL) integrácia pre produkty a objednávky je pripravená v kóde – po pripojení databázy appka automaticky začne čítať a zapisovať reálne dáta namiesto dočasných mock dát.",
+    status: "Pripravené na pripojenie",
+    statusTone: "ready" as const,
   },
   {
     label: "Modul 3",

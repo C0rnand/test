@@ -7,7 +7,7 @@ const QUADRANTS = [
     tone: "emerald",
     items: [
       "Jedinečná pozícia na trhu – bylinný energetický nápoj z Vysokých Tatier namiesto syntetických prísad bežných značiek.",
-      "Reálne funkčná platforma, nielen mockup – Next.js web s napojenou Supabase databázou, ktorá už zapisuje skutočné objednávky.",
+      "Next.js web s pripraveným reálnym napojením na Supabase databázu priamo v kóde – stačí ju pripojiť a appka automaticky prejde z testovacích dát na skutočné objednávky.",
       "Hotová vizuálna identita a 3 odlišné príchute (Classic, Exotic, Tropical).",
       "Nízke prevádzkové náklady študentského tímu a rýchla iterácia webu.",
     ],
@@ -20,7 +20,7 @@ const QUADRANTS = [
       "Chýbajúca reálna výrobná kapacita – zatiaľ žiadny zazmluvnený výrobca ani stáčanie nápoja.",
       "Nulová znalosť značky na trhu – žiadna história ani recenzie oproti etablovaným hráčom.",
       "Obmedzený rozpočet – chýbajú prostriedky na platenú reklamu, influencerov či distribúciu do obchodov.",
-      "Administrácia a prihlasovanie (Modul 3) sú zatiaľ len naplánované, nie hotové.",
+      "Reálna databáza (Supabase) je zatiaľ len pripravená v kóde, nie pripojená; administrácia a prihlasovanie (Modul 3) sú zatiaľ len naplánované, nie hotové.",
     ],
   },
   {
