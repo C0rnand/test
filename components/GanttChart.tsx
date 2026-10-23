@@ -1,109 +1,138 @@
 import Reveal from "./Reveal";
 
-// Week columns start Monday 14. 9. 2026 (odhadovaný štart projektu) a bežia
-// do polovice decembra. Dátumy zadaní 1–4 sú prevzaté priamo z reálnej
-// histórie odovzdávania v Teams (27. 9. / 11. 10. / 18. 10. / 25. 10.);
-// 9. 11. a 23. 11. sú dohodnuté s cvičiacim. Štart (14. 9.) a finálne
-// odovzdanie (18. 12.) sú odhad – uprav podľa reálneho rozvrhu.
-const WEEKS = [
-  "14. 9.", "21. 9.", "28. 9.", "5. 10.", "12. 10.", "19. 10.", "26. 10.",
-  "2. 11.", "9. 11.", "16. 11.", "23. 11.", "30. 11.", "7. 12.", "14. 12.",
-];
+// Časová os je presná (dni od 21. 9. 2026), nie zarovnaná na celé týždne –
+// úlohy v zadaní nemajú rovnako dlhé fázy, takže pozície/šírky pruhov sú
+// počítané ako % z celkového rozsahu 21. 9. – 1. 12. 2026 (72 dní).
+const TOTAL_DAYS = 72;
 
-const GRID_TEMPLATE = "minmax(230px,300px) repeat(14, minmax(40px, 1fr))";
+const TICKS: { pct: number; label: string }[] = [
+  { pct: 0, label: "21. 9." },
+  { pct: 9.72, label: "28. 9." },
+  { pct: 29.17, label: "12. 10." },
+  { pct: 38.89, label: "19. 10." },
+  { pct: 48.61, label: "26. 10." },
+  { pct: 68.06, label: "9. 11." },
+  { pct: 88.89, label: "24. 11." },
+  { pct: 100, label: "1. 12." },
+];
 
 type Status = "done" | "current" | "planned";
 
 interface Task {
   id: number;
   name: string;
+  description: string;
   dates: string;
   note: string;
   status: Status;
-  colStart: number;
-  colEnd: number;
+  /** true = súbežná úloha, nie je na kritickej ceste */
+  parallel?: boolean;
+  left: number;
+  width: number;
 }
 
 const TASKS: Task[] = [
   {
     id: 1,
-    name: "Zadanie 1 – Akronym, anotácia, webstránka a Kanban tabuľka",
-    dates: "14. 9.* – 27. 9.",
-    note: "štart projektu · odovzdané",
+    name: "Základný web",
+    description: "Inicializácia Next.js repozitára, nastavenie prostredia a vytvorenie hrubej kostry podstránok.",
+    dates: "21. 9. – 27. 9.",
+    note: "štart projektu",
     status: "done",
-    colStart: 2,
-    colEnd: 4,
+    left: 0,
+    width: 9.72,
   },
   {
     id: 2,
-    name: "Zadanie 2 – Model realizácie projektu a KPI",
+    name: "Vylepšenie UI/UX",
+    description: "Pridanie animácií, responzívneho dizajnu a doladenie globálnych štýlov webu.",
     dates: "28. 9. – 11. 10.",
-    note: "nadväzuje na #1 · odovzdané",
+    note: "nadväzuje na #1",
     status: "done",
-    colStart: 4,
-    colEnd: 6,
+    left: 9.72,
+    width: 19.44,
   },
   {
     id: 3,
-    name: "Zadanie 3 – SWOT analýza",
-    dates: "12. 10. – 18. 10.",
-    note: "nadväzuje na #2 · odovzdané",
+    name: "Návrh databázy",
+    description: "Teoretický návrh relačnej SQL schémy pre produkty a objednávky.",
+    dates: "28. 9. – 11. 10.",
+    note: "súbežne s #2 · mimo kritickej cesty",
     status: "done",
-    colStart: 6,
-    colEnd: 7,
+    parallel: true,
+    left: 9.72,
+    width: 19.44,
   },
   {
     id: 4,
-    name: "Zadanie 4 – Ganttov diagram",
-    dates: "19. 10. – 25. 10.",
-    note: "nadväzuje na #3 · termín 25. 10.",
-    status: "current",
-    colStart: 7,
-    colEnd: 8,
+    name: "Integrácia 3 príchutí",
+    description: "Nasadenie vizuálov plechoviek (Classic, Exotic, Tropical) a vytvorenie produktových detailov.",
+    dates: "12. 10. – 18. 10.",
+    note: "nadväzuje na #2, #3",
+    status: "done",
+    left: 29.17,
+    width: 9.72,
   },
   {
     id: 5,
-    name: "Redizajn a rozšírenie ponuky (nové foto, 3 príchute)",
-    dates: "26. 10. – 9. 11.",
-    note: "nadväzuje na #4 · prezentácia na cvičení 9. 11.",
-    status: "planned",
-    colStart: 8,
-    colEnd: 10,
+    name: "Nákupný košík",
+    description: "Programovanie logiky košíka a používateľského rozhrania pre objednávkový formulár.",
+    dates: "19. 10. – 25. 10.",
+    note: "nadväzuje na #4",
+    status: "current",
+    left: 38.89,
+    width: 9.72,
   },
   {
     id: 6,
-    name: "Pripojenie databázy (Modul 2 – Supabase)",
-    dates: "9. 11. – 23. 11.",
-    note: "nadväzuje na #5 · dokončenie 23. 11.",
+    name: "Vývoj API a DB",
+    description: "Vytvorenie serverových ciest a reálne prepojenie nakódovaného frontendu s databázou.",
+    dates: "26. 10. – 8. 11.",
+    note: "nadväzuje na #5",
     status: "planned",
-    colStart: 10,
-    colEnd: 12,
+    left: 48.61,
+    width: 19.44,
   },
   {
     id: 7,
-    name: "Autentifikácia a administrácia (Modul 3)",
-    dates: "23. 11. – 7. 12.",
+    name: "Administrátorský panel",
+    description: "Implementácia zabezpečeného rozhrania pre správu produktov, prebiehajúca čiastočne mimo hlavného vývoja pre zákazníkov.",
+    dates: "9. 11. – 23. 11.",
     note: "nadväzuje na #6",
     status: "planned",
-    colStart: 12,
-    colEnd: 14,
+    left: 68.06,
+    width: 20.83,
   },
   {
     id: 8,
-    name: "Testovanie a finálna prezentácia",
-    dates: "7. 12. – 18. 12.*",
+    name: "Testovanie a nasadenie",
+    description: "Finálne odlaďovanie chýb na rôznych zariadeniach a nasadenie ostrej verzie webu na produkčný server.",
+    dates: "24. 11. – 1. 12.",
     note: "nadväzuje na #7 · koniec projektu",
     status: "planned",
-    colStart: 14,
-    colEnd: 16,
+    left: 88.89,
+    width: 11.11,
   },
 ];
 
-const BAR_STYLES: Record<Status, string> = {
-  done: "h-6 rounded-md bg-emerald-600",
-  current: "h-6 rounded-md bg-amber-500",
-  planned: "h-6 rounded-md border-2 border-forest-200 bg-forest-50",
+const SOLID_FILL: Record<Status, string> = {
+  done: "bg-emerald-600",
+  current: "bg-amber-500",
+  planned: "border-2 border-forest-200 bg-forest-50",
 };
+
+const DASHED_FILL: Record<Status, string> = {
+  done: "border-2 border-dashed border-emerald-500 bg-emerald-50",
+  current: "border-2 border-dashed border-amber-500 bg-amber-50",
+  planned: "border-2 border-dashed border-forest-300 bg-forest-50",
+};
+
+function barClass(task: Task) {
+  const fill = task.parallel ? DASHED_FILL[task.status] : SOLID_FILL[task.status];
+  return `absolute inset-y-0 rounded-md ${fill}`;
+}
+
+const LABEL_COL = "w-[260px] sm:w-[300px]";
 
 export default function GanttChart() {
   return (
@@ -114,42 +143,61 @@ export default function GanttChart() {
             Ganttov diagram
           </h2>
           <p className="mt-5 leading-relaxed text-forest-700">
-            Plán projektu od úvodnej analýzy po finálne odovzdanie – 8 úloh a ich trvanie.
-            Celý reťazec tvorí jednu kritickú cestu: každá úloha priamo nadväzuje na
-            predchádzajúcu, žiadne dve sa nedajú robiť súbežne.
+            Rozdelenie úloh a časový plán vývoja – od inicializácie repozitára po nasadenie na
+            produkčný server. 7 z 8 úloh tvorí kritickú cestu; návrh databázy (#3) prebieha
+            súbežne s vylepšovaním UI/UX a kritickú cestu nepredlžuje.
           </p>
         </Reveal>
 
         <Reveal delayMs={100}>
           <div className="mt-12 overflow-x-auto rounded-2xl border border-forest-100 bg-white p-6">
-            <div className="min-w-[860px]">
-              <div className="grid gap-x-1 pb-2" style={{ gridTemplateColumns: GRID_TEMPLATE }}>
-                <div />
-                {WEEKS.map((week) => (
-                  <div key={week} className="text-center text-[11px] font-medium text-forest-400">
-                    {week}
-                  </div>
-                ))}
+            <div className="min-w-[920px]">
+              {/* časová os */}
+              <div className="flex pb-3">
+                <div className={`${LABEL_COL} shrink-0`} />
+                <div className="relative h-4 flex-1">
+                  {TICKS.map((tick, index) => (
+                    <span
+                      key={tick.label}
+                      className="absolute top-0 whitespace-nowrap text-[11px] font-medium text-forest-400"
+                      style={{
+                        left: `${tick.pct}%`,
+                        transform:
+                          index === 0
+                            ? "translateX(0%)"
+                            : index === TICKS.length - 1
+                              ? "translateX(-100%)"
+                              : "translateX(-50%)",
+                      }}
+                    >
+                      {tick.label}
+                    </span>
+                  ))}
+                </div>
               </div>
 
               {TASKS.map((task) => (
                 <div
                   key={task.id}
-                  className="grid items-center gap-x-1 border-t border-forest-100 py-3"
-                  style={{ gridTemplateColumns: GRID_TEMPLATE }}
+                  className="flex items-center border-t border-forest-100 py-3"
                 >
-                  <div className="pr-4">
+                  <div className={`${LABEL_COL} shrink-0 pr-4`}>
                     <p className="text-sm font-medium text-forest-950">
                       {task.id}. {task.name}
                     </p>
-                    <p className="mt-0.5 text-xs text-forest-400">
+                    <p className="mt-0.5 text-xs leading-snug text-forest-600">
+                      {task.description}
+                    </p>
+                    <p className="mt-1 text-[11px] text-forest-400">
                       {task.dates} · {task.note}
                     </p>
                   </div>
-                  <div
-                    style={{ gridColumn: `${task.colStart} / ${task.colEnd}` }}
-                    className={BAR_STYLES[task.status]}
-                  />
+                  <div className="relative h-6 flex-1">
+                    <div
+                      style={{ left: `${task.left}%`, width: `${task.width}%` }}
+                      className={barClass(task)}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -173,11 +221,17 @@ export default function GanttChart() {
               />
               Plánované
             </span>
+            <span className="inline-flex items-center gap-2">
+              <span
+                className="h-2.5 w-5 rounded-sm border-2 border-dashed border-forest-300 bg-forest-50"
+                aria-hidden="true"
+              />
+              Súbežná úloha (mimo kritickej cesty)
+            </span>
           </div>
           <p className="mt-3 text-xs text-forest-400">
-            Termíny zadaní 1 – 4 sú potvrdené históriou odovzdávania v Teams (27. 9. / 11. 10. /
-            18. 10. / 25. 10.); 9. 11. a 23. 11. sú dohodnuté s cvičiacim. * 14. 9. (štart) a
-            18. 12. (finálne odovzdanie) sú odhad – uprav podľa reálneho rozvrhu.
+            Kritická cesta: #1 → #2 → #4 → #5 → #6 → #7 → #8. Úloha #3 (návrh databázy) beží
+            súbežne s #2 a projekt nepredlžuje, aj keby trvala dlhšie.
           </p>
         </Reveal>
       </div>
