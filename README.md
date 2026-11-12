@@ -65,9 +65,10 @@ tatra-budic/
 ├── components/
 │   ├── AboutUs.tsx              # "Odkiaľ sme prišli" – o startupe
 │   ├── Benefits.tsx             # "Načo je to dobré" – výhody produktu
+│   ├── BusinessCase.tsx         # "Business case a uskutočniteľnosť" (5. zadanie) – vykresľuje lib/businessCaseContent.ts
 │   ├── ContactForm.tsx          # objednávkový / kontaktný formulár (client)
 │   ├── Footer.tsx
-│   ├── GanttChart.tsx           # "Ganttov diagram" – 8 úloh, kritická cesta
+│   ├── GanttChart.tsx           # "Ganttov diagram" – 8 úloh, kritická cesta, pôvodné termíny, značka "Dnes"
 │   ├── Header.tsx               # scroll-aware glass navbar + mobilné menu (client)
 │   ├── Hero.tsx                 # úvodná sekcia s videom, názvom, akronymom, anotáciou
 │   ├── HeroVideo.tsx            # <video> vrstva hero sekcie (client, rešpektuje reduced motion)
@@ -79,11 +80,13 @@ tatra-budic/
 │   ├── SWOT.tsx                 # "SWOT analýza" – 4 kvadranty (S/W/O/T)
 │   ├── Team.tsx                 # "Náš tím" – 4 členovia tímu
 │   ├── Timeline.tsx             # "Realizácia projektu" – inkrementálny model (Modul 1/2/3)
-│   └── ZadaniaIntro.tsx         # spoločný nadpis "Zadania" (Realizácia/KPI/SWOT/Gantt)
+│   └── ZadaniaIntro.tsx         # spoločný nadpis "Zadania" (Realizácia/KPI/SWOT/Gantt/Business case)
 ├── database/
 │   └── schema.sql               # návrh DB schémy (PostgreSQL)
 ├── lib/
-│   └── db.ts                    # dátová vrstva – pripravená na napojenie DB
+│   ├── businessCaseContent.ts   # všetky texty a čísla business case + štúdie uskutočniteľnosti, zdroje [1]–[15]
+│   ├── db.ts                    # dátová vrstva – pripravená na napojenie DB
+│   └── schedule.ts              # JEDINÝ zdroj harmonogramu (úlohy, dátumy, stav) – používa ho Gantt aj business case
 ├── public/
 │   ├── logo-mark.svg            # vektorový brand mark (shield + tatranské vrchy + blesk)
 │   ├── cans/
@@ -138,9 +141,22 @@ npm run lint    # ESLint kontrola
   - **Ako meriame úspech** – 3 KPI karty v dashboard štýle (pozri sekciu 9)
   - **SWOT analýza** *(nové)* – 4 kvadranty (Silné/Slabé stránky, Príležitosti,
     Hrozby), každý so 4 konkrétnymi bodmi k projektu TABU
-  - **Ganttov diagram** *(nové)* – 8 úloh od analýzy po finálne odovzdanie,
-    vyznačená kritická cesta; záväzné termíny 9. 11. (prezentácia na cvičení)
-    a 23. 11. (pripojenie databázy)
+  - **Ganttov diagram** *(aktualizované 12. 11. 2026)* – 8 úloh od základného
+    webu po testovanie a nasadenie, vyznačená kritická cesta, pôvodné termíny
+    posunutých úloh (tenká čiara) a značka „Dnes“. Po cvičení 9. 11. sa databáza
+    pripája až 23. 11. 2026, preto sú úlohy #6 – #8 posunuté o ≈ 2 týždne
+    a projekt končí 15. 12. 2026 (pôvodne 1. 12. 2026). Všetky dátumy a stavy
+    sú na jednom mieste v `lib/schedule.ts` (konštanta `STATUS_DATE` = „dnes“);
+    Gantt aj časti business case, ktoré z harmonogramu čerpajú čísla (počet
+    hotových úloh, posun konca, zostávajúce dni), sa po zmene prepočítajú samé.
+  - **Business case a štúdia uskutočniteľnosti** *(nové, 5. zadanie)* –
+    A) problém, hlavný cieľ + 4 čiastkové ciele, cieľová skupina, prínosy
+    a odlišnosť, porovnanie s konkurenciou; B) technická, organizačná
+    a časová uskutočniteľnosť (každé tvrdenie označené Máme / Chýba / Riziko),
+    celkové zhodnotenie, zásadné obmedzenia a podmienky go / no-go. Číselné
+    údaje z cudzích zdrojov majú odkaz [n] na zoznam zdrojov na konci sekcie,
+    vlastné odhady sú označené ako „odhad“. Texty sa upravujú v
+    `lib/businessCaseContent.ts`, nie v komponente.
 - **Kontakt / objednávka** – formulár (meno, email, množstvo, správa) →
   `POST /api/orders`; **platby nie sú implementované** (v súlade so zadaním)
 
@@ -210,7 +226,8 @@ výkon stránky. Riešenie:
   → Produkt (biela) → Naša ponuka (svetlá) → Výhody (svetlá) → O nás (zelená tma)
   → Tím (čierna/striebro) → Zadania: Realizácia (biela, čitateľná pre dlhší text)
   → KPI (zelená tma, dashboard) → SWOT (biela, 4 farebne odlíšené kvadranty)
-  → Gantt (svetlá, horizontálny diagram) → Kontakt (biela, pokojná pre formulár).
+  → Gantt (svetlá, horizontálny diagram) → Business case (biela, dlhší text
+  a tabuľka) → Kontakt (biela, pokojná pre formulár).
 
 ## 8. Databáza
 
