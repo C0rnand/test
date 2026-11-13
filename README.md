@@ -68,7 +68,7 @@ tatra-budic/
 │   ├── BusinessCase.tsx         # "Business case a uskutočniteľnosť" (5. zadanie) – vykresľuje lib/businessCaseContent.ts
 │   ├── ContactForm.tsx          # objednávkový / kontaktný formulár (client)
 │   ├── Footer.tsx
-│   ├── GanttChart.tsx           # "Ganttov diagram" – 8 úloh, kritická cesta, pôvodné termíny, značka "Dnes"
+│   ├── GanttChart.tsx           # "Ganttov diagram" – 8 úloh, kritická cesta, pôvodné termíny, značka "Stav k …"
 │   ├── Header.tsx               # scroll-aware glass navbar + mobilné menu (client)
 │   ├── Hero.tsx                 # úvodná sekcia s videom, názvom, akronymom, anotáciou
 │   ├── HeroVideo.tsx            # <video> vrstva hero sekcie (client, rešpektuje reduced motion)
@@ -84,11 +84,12 @@ tatra-budic/
 ├── database/
 │   └── schema.sql               # návrh DB schémy (PostgreSQL)
 ├── lib/
-│   ├── businessCaseContent.ts   # všetky texty a čísla business case + štúdie uskutočniteľnosti, zdroje [1]–[15]
+│   ├── businessCaseContent.ts   # všetky texty a čísla business case + štúdie uskutočniteľnosti, rozhodnutie no-go, zdroje [1]–[15]
 │   ├── db.ts                    # dátová vrstva – pripravená na napojenie DB
 │   └── schedule.ts              # JEDINÝ zdroj harmonogramu (úlohy, dátumy, stav) – používa ho Gantt aj business case
 ├── public/
 │   ├── logo-mark.svg            # vektorový brand mark (shield + tatranské vrchy + blesk)
+│   ├── TABU-5-zadanie-business-case.pdf  # PDF 5. zadania – otvára ho tlačidlo na konci sekcie Zadania
 │   ├── cans/
 │   │   ├── classic.webp         # produktová fotka – Tatra Budič Classic (bez pozadia)
 │   │   ├── exotic.webp          # produktová fotka – Tatra Budič Exotic (bez pozadia)
@@ -141,22 +142,33 @@ npm run lint    # ESLint kontrola
   - **Ako meriame úspech** – 3 KPI karty v dashboard štýle (pozri sekciu 9)
   - **SWOT analýza** *(nové)* – 4 kvadranty (Silné/Slabé stránky, Príležitosti,
     Hrozby), každý so 4 konkrétnymi bodmi k projektu TABU
-  - **Ganttov diagram** *(aktualizované 12. 11. 2026)* – 8 úloh od základného
-    webu po testovanie a nasadenie, vyznačená kritická cesta, pôvodné termíny
-    posunutých úloh (tenká čiara) a značka „Dnes“. Po cvičení 9. 11. sa databáza
-    pripája až 23. 11. 2026, preto sú úlohy #6 – #8 posunuté o ≈ 2 týždne
-    a projekt končí 15. 12. 2026 (pôvodne 1. 12. 2026). Všetky dátumy a stavy
-    sú na jednom mieste v `lib/schedule.ts` (konštanta `STATUS_DATE` = „dnes“);
-    Gantt aj časti business case, ktoré z harmonogramu čerpajú čísla (počet
-    hotových úloh, posun konca, zostávajúce dni), sa po zmene prepočítajú samé.
+  - **Ganttov diagram** *(aktualizované: stav k 23. 11. 2026)* – 8 úloh od
+    základného webu po testovanie a nasadenie, vyznačená kritická cesta,
+    pôvodné termíny posunutých úloh (tenká čiara) a značka „Stav k 23. 11.“.
+    Diagram ukazuje projekt tak, akoby bolo k 23. 11. 2026 hotové všetko
+    (úlohy #1 – #6 vrátane pripojenia databázy); zostávajú #7 a #8. Po cvičení
+    9. 11. sa databáza pripája až 23. 11., preto sú úlohy #6 – #8 posunuté
+    o ≈ 2 týždne a projekt končí 15. 12. 2026 (pôvodne 1. 12. 2026). Všetky
+    dátumy a stavy sú na jednom mieste v `lib/schedule.ts` (konštanta
+    `STATUS_DATE`); skutočný dnešný stav sa vráti zmenou `STATUS_DATE` a stavu
+    úlohy #6 na `current`. Gantt aj časti business case, ktoré z harmonogramu
+    čerpajú čísla (počet hotových úloh, posun konca, zostávajúce dni), sa po
+    zmene prepočítajú samé.
   - **Business case a štúdia uskutočniteľnosti** *(nové, 5. zadanie)* –
     A) problém, hlavný cieľ + 4 čiastkové ciele, cieľová skupina, prínosy
     a odlišnosť, porovnanie s konkurenciou; B) technická, organizačná
     a časová uskutočniteľnosť (každé tvrdenie označené Máme / Chýba / Riziko),
-    celkové zhodnotenie, zásadné obmedzenia a podmienky go / no-go. Číselné
-    údaje z cudzích zdrojov majú odkaz [n] na zoznam zdrojov na konci sekcie,
+    celkové zhodnotenie, zásadné obmedzenia a podmienky, za ktorých by sme
+    výrobu prehodnotili. **Rozhodnutie tímu: výrobu a predaj skutočného nápoja
+    nerealizujeme, je finančne príliš náročná** (blok „Finančná
+    uskutočniteľnosť“ s porovnaním ceny a minimálnej série); web
+    s ukážkovými objednávkami dokončíme v rámci semestra. Číselné údaje
+    z cudzích zdrojov majú odkaz [n] na zoznam zdrojov na konci sekcie,
     vlastné odhady sú označené ako „odhad“. Texty sa upravujú v
-    `lib/businessCaseContent.ts`, nie v komponente.
+    `lib/businessCaseContent.ts`, nie v komponente. Úplne dole v sekcii je
+    tlačidlo **„Otvoriť PDF“** (`public/TABU-5-zadanie-business-case.pdf`,
+    7 strán) – PDF je vytvorené z rovnakých textov, ale je to hotový súbor:
+    po zmene textov v `lib/businessCaseContent.ts` sa samo neprepíše.
 - **Kontakt / objednávka** – formulár (meno, email, množstvo, správa) →
   `POST /api/orders`; **platby nie sú implementované** (v súlade so zadaním)
 

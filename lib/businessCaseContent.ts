@@ -90,7 +90,7 @@ export const SOURCES = [
   },
   {
     key: "plechovka",
-    title: "Moja plechovka (Žilina): plechovky s vlastnou grafikou od 12 ks",
+    title: "Moja plechovka (Žilina): cenník hotových plechoviek s vlastnou potlačou od 12 ks",
     url: "https://www.moja-plechovka.sk/",
   },
   {
@@ -150,11 +150,34 @@ const daysAfterDb = daysBetween(dbDate, SCHEDULE_END);
 const latestKpiStart = addDays(SCHEDULE_END, -KPI_WINDOW_DAYS);
 
 const doneIds = TASKS.filter((task) => task.status === "done").map((task) => task.id);
-const dueIds = TASKS.filter((task) => (task.baseline?.end ?? task.end) < STATUS_DATE).map(
+const dueIds = TASKS.filter((task) => (task.baseline?.end ?? task.end) <= STATUS_DATE).map(
   (task) => task.id,
 );
 const idRange = (ids: number[]) => `#${Math.min(...ids)} – #${Math.max(...ids)}`;
 const openDaysText = stats.openDays.map((open) => open.days).join(" + ");
+const tasksWord = (n: number) => (n === 1 ? "úloha" : n >= 2 && n <= 4 ? "úlohy" : "úloh");
+
+// Databáza (úloha #6): texty sa prispôsobia tomu, či je v harmonograme už hotová
+const dbTask = TASKS.find((task) => task.id === 6);
+const dbDone = dbTask?.status === "done";
+const dbBaselineEnd = dbTask?.baseline?.end ?? dbDate;
+const dbSlipDays = daysBetween(dbBaselineEnd, dbDate);
+const nextOpenId = TASKS.find((task) => task.status !== "done")?.id ?? 0;
+const kpiWindowMissed = STATUS_DATE > latestKpiStart;
+
+// Financie – výroba skutočného nápoja
+const READY_CAN_LOW_EUR = 1.94; // hotová plechovka energetického nápoja 0,25 l s vlastnou potlačou, bez dopravy (Moja plechovka)
+const READY_CAN_HIGH_EUR = 2.45;
+const MIN_BATCH_CANS = 500; // najmenšia nami nájdená séria 330 ml (Svachovka)
+const thousands = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+const canShareLow = Math.round((READY_CAN_LOW_EUR / netAfterTax) * 100);
+const canShareHigh = Math.round((READY_CAN_HIGH_EUR / netAfterTax) * 100);
+const leftoverLow = netAfterTax - READY_CAN_LOW_EUR;
+const shortfallHigh = READY_CAN_HIGH_EUR - netAfterTax;
+const batchGross = Math.round(MIN_BATCH_CANS * PRICE_EUR);
+const batchNet = Math.round((MIN_BATCH_CANS * netAfterTax) / 10) * 10;
+const batchReadyLow = Math.round(MIN_BATCH_CANS * READY_CAN_LOW_EUR);
+const batchReadyHigh = Math.round(MIN_BATCH_CANS * READY_CAN_HIGH_EUR);
 
 // ---------------------------------------------------------------------------
 // Typy
@@ -165,7 +188,7 @@ export interface StatItem {
   label: string;
 }
 
-export type Tone = "ok" | "conditional";
+export type Tone = "ok" | "conditional" | "no";
 export type ItemTag = "Máme" | "Chýba" | "Riziko";
 
 export interface FeasibilityItem {
@@ -192,6 +215,21 @@ export const META = {
   project: "Tatra Budič (TABU)",
   statusLine: `Stav k ${formatDMY(STATUS_DATE)}`,
   lead: "Zdôvodnenie, prečo má Tatra Budič zmysel, a posúdenie, za akých podmienok je reálne uskutočniteľný. Čísla z cudzích zdrojov majú odkaz v hranatej zátvorke na zoznam zdrojov na konci; naše vlastné odhady sú vždy označené ako odhad.",
+};
+
+/** Záver tímu – zobrazí sa hneď pod úvodom (web aj PDF). Bez odkazov [n], aby poradie zdrojov ostalo od [1]. */
+export const DECISION = {
+  label: "Rozhodnutie tímu",
+  title: "Výrobu a predaj skutočného nápoja nerealizujeme",
+  text: `Je finančne príliš náročná: z ceny 2,90 € nám po odpočítaní DPH a dane zostane ≈ ${eur(netAfterTax)} na plechovku (odhad), pričom už hotová plechovka s vlastnou potlačou stojí u malého výrobcu ${eur(READY_CAN_LOW_EUR)} – ${eur(READY_CAN_HIGH_EUR)} za kus (bez dopravy), najmenšia séria má ${MIN_BATCH_CANS} ks a tím nemá rozpočet ani podnikateľský subjekt (podrobnosti v časti B). Tatra Budič ostáva ako webový koncept s ukážkovými objednávkami, ktorý dokončíme v rámci semestra.`,
+};
+
+/** PDF verzia zadania, ktorú otvára tlačidlo na konci sekcie (súbor leží v public/). */
+export const PDF_DOWNLOAD = {
+  href: "/TABU-5-zadanie-business-case.pdf",
+  title: "5. zadanie ako PDF",
+  text: "Business case a štúdia uskutočniteľnosti v jednom dokumente (A4) – rovnaký obsah ako na tejto stránke.",
+  button: "Otvoriť PDF",
 };
 
 /** Tím podľa sekcie „Tím“ na webe (meno + rola) – použije sa v hlavičke PDF. */
@@ -226,13 +264,17 @@ export const BUSINESS_CASE = {
   },
 
   goals: {
-    main: `Do ${formatDMY(SCHEDULE_END)} prevádzkovať funkčný predobjednávkový web TABU, na ktorom reálne zmeriame dopyt po bylinnom energetickom nápoji, a podľa nameraných dát rozhodnúť, či pristúpiť k výrobe prvej dávky.`,
+    main: `Do ${formatDMY(SCHEDULE_END)} dokončiť a prevádzkovať funkčný web TABU s objednávkovým formulárom, ktorý overí koncept bylinného energetického nápoja, a na základe štúdie uskutočniteľnosti rozhodnúť o výrobe prvej dávky. Rozhodnutie: výrobu nerealizujeme, je finančne príliš náročná.`,
     sub: [
       {
         title: "Trvalé ukladanie objednávok",
-        text: "Pripojiť databázu Supabase tak, aby sa každá objednávka z formulára uložila do tabuľky orders. Kód je pripravený, zostáva konfigurácia a test.",
-        deadline: `${formatDMY(dbDate)} (Gantt #6)`,
-        measure: "Testovacia objednávka sa objaví v databáze.",
+        text: dbDone
+          ? "Databáza Supabase je pripojená a každá objednávka z formulára sa ukladá do tabuľky orders."
+          : "Pripojiť databázu Supabase tak, aby sa každá objednávka z formulára uložila do tabuľky orders. Kód je pripravený, zostáva konfigurácia a test.",
+        deadline: `${formatDMY(dbDate)} (Gantt #6)${dbDone ? " – splnené" : ""}`,
+        measure: dbDone
+          ? "Testovacia objednávka sa objavila v databáze."
+          : "Testovacia objednávka sa objaví v databáze.",
       },
       {
         title: "Overenie dopytu cez KPI",
@@ -248,9 +290,9 @@ export const BUSINESS_CASE = {
       },
       {
         title: "Podklady pre rozhodnutie o výrobe",
-        text: "Mať zmapované regulačné náklady (označovanie kofeínu, daň, záloha na obal), ponuku výrobcu pilotnej dávky a kalkuláciu jednotkových nákladov.",
-        deadline: `${formatDMY(SCHEDULE_END)} (koniec projektu)`,
-        measure: "Rozhodnutie go / no-go podľa podmienok v štúdii uskutočniteľnosti.",
+        text: "Zmapovať regulačné náklady (označovanie kofeínu, daň, záloha na obal), možnosti výrobcov pilotnej dávky a jednotkové náklady a na ich základe rozhodnúť o výrobe.",
+        deadline: "rozhodnuté pri tomto zadaní",
+        measure: "Rozhodnutie go / no-go: tím rozhodol no-go – výroba je finančne príliš náročná (časť B, Finančná uskutočniteľnosť).",
       },
     ],
   },
@@ -290,8 +332,8 @@ export const BUSINESS_CASE = {
       text: "Bylinný príbeh z Vysokých Tatier a predaj priamo cez web na kampuse – bez marže obchodných reťazcov a bez boja o miesto na regáli.",
     },
     {
-      title: "Dopyt overený pred výrobou",
-      text: `Predobjednávky ukážu, či sa oplatí vyrábať. Najmenšia nami nájdená dávka plechoviek 330 ml je 500 ks ${ref("svachovka")}, takže sa rozhodneme až podľa nameraného dopytu.`,
+      title: "Dopyt sa dá overiť bez výroby",
+      text: `Ukážkové objednávky a KPI ukážu záujem o nápoj bez toho, aby sa niečo vyrábalo na sklad. Najmenšia nami nájdená dávka plechoviek 330 ml je 500 ks ${ref("svachovka")} – pre študentský tím príliš veľká investícia, preto dopyt overujeme len webom.`,
     },
   ],
 
@@ -337,7 +379,7 @@ export const BUSINESS_CASE = {
         meaning: "TABU ich nenahrádza; ponúka studenú, ochutenú plechovku na cesty a šport.",
       },
     ],
-    verdict: `Súťaž cenou s mainstreamom nie je možná: 2,90 € za 330 ml (${sk(Math.round(perLitre * 100) / 100)} €/l) je o ${vsRedBullCan} % viac než plechovka Red Bullu a o ${vsRedBullLitre} % viac na liter ${ref("tesco")}. TABU môže uspieť len ako prémiová, prírodná a lokálna voľba pre ľudí, ktorí si ju vedome vyberú – a presne to merajú naše KPI (priemerne > 4 ks na objednávku, konverzia ≥ 8 %).`,
+    verdict: `Súťaž cenou s mainstreamom nie je možná: 2,90 € za 330 ml (${sk(Math.round(perLitre * 100) / 100)} €/l) je o ${vsRedBullCan} % viac než plechovka Red Bullu a o ${vsRedBullLitre} % viac na liter ${ref("tesco")}. TABU by mohlo uspieť len ako prémiová, prírodná a lokálna voľba pre ľudí, ktorí si ju vedome vyberú – a presne to merajú naše KPI (priemerne > 4 ks na objednávku, konverzia ≥ 8 %).`,
   },
 };
 
@@ -347,7 +389,7 @@ export const BUSINESS_CASE = {
 
 const technicalWeb: FeasibilityBlock = {
   id: "technical-web",
-  title: "Technická uskutočniteľnosť – web a predobjednávky",
+  title: "Technická uskutočniteľnosť – web a ukážkové objednávky",
   verdict: "Uskutočniteľné",
   tone: "ok",
   items: [
@@ -357,7 +399,9 @@ const technicalWeb: FeasibilityBlock = {
     },
     {
       tag: "Máme",
-      text: "Kód pre databázu už existuje – lib/db.ts, database/schema.sql (tabuľky products a orders) a API /api/orders. Bez databázy appka beží na záložných dátach, takže pripojenie je len konfigurácia (spustiť SQL schému, nastaviť dve premenné prostredia, nasadiť znova), nie vývoj od nuly.",
+      text: dbDone
+        ? `Databáza je pripojená (Gantt #6, ${formatDM(dbDate)}): kód lib/db.ts, database/schema.sql (tabuľky products a orders) a API /api/orders ukladajú objednávky do Supabase. Pripojenie bolo len konfigurácia (spustiť SQL schému, nastaviť dve premenné prostredia, nasadiť znova), nie vývoj od nuly.`
+        : "Kód pre databázu už existuje – lib/db.ts, database/schema.sql (tabuľky products a orders) a API /api/orders. Bez databázy appka beží na záložných dátach, takže pripojenie je len konfigurácia (spustiť SQL schému, nastaviť dve premenné prostredia, nasadiť znova), nie vývoj od nuly.",
     },
     {
       tag: "Máme",
@@ -365,7 +409,9 @@ const technicalWeb: FeasibilityBlock = {
     },
     {
       tag: "Chýba",
-      text: "Meranie KPI: balík @vercel/analytics nie je v projekte (ani náhradné meranie cez localStorage), takže KPI č. 2 a č. 3 sa zatiaľ merať nedajú; KPI č. 1 a č. 2 navyše potrebujú pripojenú databázu.",
+      text: dbDone
+        ? "Meranie KPI: KPI č. 1 (priemerne > 4 ks na objednávku) sa dá počítať z tabuľky orders. Balík @vercel/analytics ale nie je v projekte (ani náhradné meranie cez localStorage), takže KPI č. 2 (konverzia) a č. 3 (návrat návštevníkov) sa merať nedajú."
+        : "Meranie KPI: balík @vercel/analytics nie je v projekte (ani náhradné meranie cez localStorage), takže KPI č. 2 a č. 3 sa zatiaľ merať nedajú; KPI č. 1 a č. 2 navyše potrebujú pripojenú databázu.",
     },
     {
       tag: "Chýba",
@@ -373,7 +419,7 @@ const technicalWeb: FeasibilityBlock = {
     },
     {
       tag: "Chýba",
-      text: `Platby a overenie veku: formulár je ukážková objednávka bez platby. Reálny predaj by potreboval platobnú bránu a – ak návrh zákona o veku prejde – aj elektronické overenie veku v e-shope ${ref("bill")}.`,
+      text: `Platby a overenie veku: formulár je ukážková objednávka bez platby a bez doručenia. Reálny predaj by potreboval platobnú bránu a – ak návrh zákona o veku prejde – aj elektronické overenie veku v e-shope ${ref("bill")}.`,
     },
     {
       tag: "Riziko",
@@ -394,7 +440,7 @@ const technicalProduct: FeasibilityBlock = {
   items: [
     {
       tag: "Máme",
-      text: `Dodávatelia pre malé série existujú, vlastné plniace vybavenie nepotrebujeme: Svachovka (ČR) plní plechovky 250/330/500 ml už od 500 ks, etikety trvajú približne 3 týždne a cena je na vyžiadanie ${ref("svachovka")}. Moja plechovka (Žilina) ponúka plechovky s vlastnou grafikou od 12 ks (pri 0,25 l 1,94 – 2,45 € za kus podľa počtu) ${ref("plechovka")} – hodí sa na hmatateľný prototyp vzhľadu, či vedia naplniť našu receptúru, stránka neuvádza. Mana Roots plní len do skla (od 1 450 ks), pre plechovku nevyhovuje ${ref("manaroots")}.`,
+      text: `Dodávatelia pre malé série existujú, vlastné plniace vybavenie nepotrebujeme: Svachovka (ČR) plní plechovky 250/330/500 ml už od 500 ks, etikety trvajú približne 3 týždne a cena je na vyžiadanie ${ref("svachovka")}. Moja plechovka (Žilina) predáva hotové plechovky s vlastnou potlačou od 12 ks; nápoj sa vyberá z ich zoznamu (energetický nápoj 0,25 l stojí 1,94 – 2,45 € za kus podľa počtu, bez dopravy) ${ref("plechovka")} – hodí sa na hmatateľný prototyp vzhľadu, či vedia naplniť našu receptúru, stránka neuvádza. Mana Roots plní len do skla (od 1 450 ks), pre plechovku nevyhovuje ${ref("manaroots")}.`,
     },
     {
       tag: "Chýba",
@@ -411,10 +457,57 @@ const technicalProduct: FeasibilityBlock = {
   ],
 };
 
+const financial: FeasibilityBlock = {
+  id: "financial",
+  title: "Finančná uskutočniteľnosť – výroba a predaj nápoja",
+  verdict: "Neúnosné – nerealizujeme",
+  tone: "no",
+  stats: [
+    {
+      value: `≈ ${eur(netAfterTax)}`,
+      label: `čistý výnos z plechovky za 2,90 € po odpočítaní DPH ${ref("vat")} a dane ${ref("tax")} (odhad)`,
+    },
+    {
+      value: `${eur(READY_CAN_LOW_EUR)} – ${eur(READY_CAN_HIGH_EUR)}`,
+      label: `cena za kus hotovej plechovky energetického nápoja 0,25 l s vlastnou potlačou u výrobcu malých sérií, bez dopravy ${ref("plechovka")}`,
+    },
+    {
+      value: `≈ ${canShareLow} – ${canShareHigh} %`,
+      label: "z nášho čistého výnosu na plechovku by predstavovala už len cena hotovej plechovky od takého výrobcu (odhad; iný objem a receptúra)",
+    },
+    {
+      value: `≈ ${thousands(batchNet)} €`,
+      label: `čistá tržba z celej najmenšej série ${MIN_BATCH_CANS} ks ${ref("svachovka")}, ak by sme predali všetko za 2,90 € (odhad)`,
+    },
+  ],
+  items: [
+    {
+      tag: "Riziko",
+      text: `Čistý výnos na plechovku je malý: z 2,90 € s DPH zostane po odpočítaní DPH 23 % ${eur(netPrice)} a – ak je nápoj sladený a má kofeín nad ${CAFFEINE_LIMIT_MG_PER_LITRE} mg/l – po odpočítaní dane ≈ ${eur(netAfterTax)} (odhad).`,
+    },
+    {
+      tag: "Riziko",
+      text: `Pre porovnanie s trhom: u slovenského výrobcu malých sérií stojí hotová plechovka energetického nápoja 0,25 l s vlastnou potlačou ${eur(READY_CAN_LOW_EUR)} – ${eur(READY_CAN_HIGH_EUR)} za kus podľa počtu (12 – 239 ks), bez dopravy ${ref("plechovka")}. To je ≈ ${canShareLow} – ${canShareHigh} % nášho čistého výnosu na plechovku (odhad; iný objem a receptúra). Ak by sme platili rovnako, pri najnižšej cene by nám zostalo ≈ ${eur(leftoverLow)} na dopravu, zálohu 0,15 € a všetko ostatné, pri najvyššej cene by sme na každej plechovke strácali ≈ ${eur(shortfallHigh)} (odhad). Cenu plnenia našej receptúry a objemu 330 ml sme od výrobcov nezistili – je na vyžiadanie ${ref("svachovka")}.`,
+    },
+    {
+      tag: "Riziko",
+      text: `Najmenšia séria má ${MIN_BATCH_CANS} ks: aj keby sme všetky predali za 2,90 €, tržba je ${thousands(batchGross)} € s DPH, po odpočítaní DPH a dane ≈ ${thousands(batchNet)} € (odhad). Pre porovnanie: ${MIN_BATCH_CANS} hotových plechoviek za cenu ako u malého výrobcu (${eur(READY_CAN_LOW_EUR)} – ${eur(READY_CAN_HIGH_EUR)} za kus) by stálo ≈ ${thousands(batchReadyLow)} – ${thousands(batchReadyHigh)} € (odhad) a výrobu by sme platili vopred, ešte pred prvým predajom.`,
+    },
+    {
+      tag: "Chýba",
+      text: "Financovanie: nemáme podnikateľský subjekt ani rozpočet a nikto nás nefinancuje, takže prvú sériu by museli zaplatiť členovia tímu z vlastného.",
+    },
+    {
+      tag: "Riziko",
+      text: `Vedľajšie náklady, na ktoré zatiaľ nemáme ponuky: laboratórne overenie receptúry a kontrola označenia, pri reálnom predaji platené plány Supabase Pro od 25 USD mesačne ${ref("supabase")} a Vercel ${ref("vercel")} a právna kontrola.`,
+    },
+  ],
+};
+
 const organizational: FeasibilityBlock = {
   id: "organizational",
   title: "Organizačná a prevádzková uskutočniteľnosť",
-  verdict: "V semestri áno · po semestri podmienečne",
+  verdict: "V semestri áno · výrobu nerealizujeme",
   tone: "conditional",
   items: [
     {
@@ -423,27 +516,27 @@ const organizational: FeasibilityBlock = {
     },
     {
       tag: "Máme",
-      text: "Postupujeme inkrementálne po moduloch (Modul 1 – 3): každý modul končí funkčnou verziou webu. Modul 1 je hotový a nasadený, Modul 2 (databáza) je v kóde pripravený – sklz v Module 3 (administrácia) ich neohrozí.",
+      text: `Postupujeme inkrementálne po moduloch (Modul 1 – 3): každý modul končí funkčnou verziou webu. ${dbDone ? `Modul 1 je hotový a nasadený, Modul 2 (databáza) je pripojený od ${formatDM(dbDate)}` : "Modul 1 je hotový a nasadený, Modul 2 (databáza) je v kóde pripravený"} – sklz v Module 3 (administrácia) ich neohrozí.`,
     },
     {
       tag: "Máme",
-      text: `Prevádzka pilotu stojí 0 € (Vercel Hobby + Supabase Free) ${ref("supabase", "vercel")}; objednávky sú predobjednávky bez platby, takže netreba ani platobnú bránu.`,
+      text: `Prevádzka pilotu stojí 0 € (Vercel Hobby + Supabase Free) ${ref("supabase", "vercel")}; objednávky sú ukážkové a bez platby, takže netreba ani platobnú bránu.`,
     },
     {
       tag: "Chýba",
-      text: "Určený správca objednávok: zatiaľ nie je dohodnuté, kto predobjednávky číta a odpovedá na ne. Návrh: Team Lead číta objednávky priamo v tabuľke Supabase a odpovedá e-mailom, kým nie je hotový administrátorský panel (Gantt #7); potom ich spracúva cez panel.",
+      text: "Určený správca objednávok: zatiaľ nie je dohodnuté, kto ukážkové objednávky číta a odpovedá na ne. Návrh: Team Lead číta objednávky priamo v tabuľke Supabase a odpovedá e-mailom, kým nie je hotový administrátorský panel (Gantt #7); potom ich spracúva cez panel.",
     },
     {
       tag: "Chýba",
-      text: "Podnikateľský subjekt a financovanie – nemáme ani jedno. Predaj potravín bez podnikateľského subjektu nie je možný a nie je ani cieľom semestra.",
+      text: "Podnikateľský subjekt a financovanie – nemáme ani jedno. Predaj potravín bez podnikateľského subjektu nie je možný; keďže výrobu nerealizujeme, subjekt ani nezakladáme.",
     },
     {
       tag: "Riziko",
       text: "Osobné údaje: formulár zbiera meno a e-mail. Web už uvádza, že ich použijeme len v rámci univerzitného projektu; pri pripojení databázy treba zvoliť región v EÚ a po skončení projektu údaje zmazať.",
     },
     {
-      tag: "Riziko",
-      text: `Po semestri nemá projekt zaručeného vlastníka ani rozpočet: pokračovanie závisí od rozhodnutia tímu podľa KPI. Pri no-go ostane web ako portfólio zdarma; pri go treba platené plány (Supabase Pro od 25 USD mesačne ${ref("supabase")}, platený plán Vercel ${ref("vercel")}), výrobcu a právnu kontrolu.`,
+      tag: "Máme",
+      text: `Plán po semestri: výrobu nerealizujeme, takže nevznikajú žiadne prevádzkové náklady okrem webu. Ten ostane ako portfólio na bezplatných plánoch (Vercel Hobby + Supabase Free) ${ref("supabase", "vercel")}. Ak by sa tím neskôr rozhodol pokračovať, musel by prejsť na platené plány (Supabase Pro od 25 USD mesačne ${ref("supabase")}, platený plán Vercel ${ref("vercel")}), nájsť výrobcu a zabezpečiť právnu kontrolu.`,
     },
   ],
 };
@@ -464,7 +557,7 @@ const time: FeasibilityBlock = {
     },
     {
       value: `${stats.remainingDays} dní`,
-      label: `do konca zostáva, ${stats.openDays.length} úlohy po ${openDaysText} dní`,
+      label: `do konca zostáva, ${stats.openDays.length} ${tasksWord(stats.openDays.length)} po ${openDaysText} dní`,
     },
     {
       value: "0 dní",
@@ -474,11 +567,13 @@ const time: FeasibilityBlock = {
   items: [
     {
       tag: "Máme",
-      text: `Úlohy ${idRange(doneIds)} sú hotové a overiteľné v repozitári a na nasadenom webe. Kód pre #6 je napísaný, zostáva konfigurácia a test (pripojiť databázu) – odhad: niekoľko hodín práce plus testovanie, na ktoré je k dispozícii ${stats.openDays.find((open) => open.id === 6)?.days ?? 0} dní.`,
+      text: dbDone
+        ? `Úlohy ${idRange(doneIds)} sú hotové a overiteľné v repozitári a na nasadenom webe, vrátane pripojenia databázy (#6, ${formatDM(dbDate)}). Zostáva administrátorský panel (#7) a testovanie a nasadenie (#8).`
+        : `Úlohy ${idRange(doneIds)} sú hotové a overiteľné v repozitári a na nasadenom webe. Kód pre #6 je napísaný, zostáva konfigurácia a test (pripojiť databázu) – odhad: niekoľko hodín práce plus testovanie, na ktoré je k dispozícii ${stats.openDays.find((open) => open.id === 6)?.days ?? 0} dní.`,
     },
     {
       tag: "Riziko",
-      text: `Plán sa už raz ukázal ako optimistický: podľa pôvodného harmonogramu mali byť k ${formatDM(STATUS_DATE)} hotové úlohy ${idRange(dueIds)}, hotové sú ${idRange(doneIds)}. Ďalší sklz pri #6 posunie celý reťazec #7 – #8 za ${formatDMY(SCHEDULE_END)}, lebo rezerva je nulová.`,
+      text: `Plán sa už raz ukázal ako optimistický: databáza (#6) mala byť podľa pôvodného harmonogramu hotová ${formatDM(dbBaselineEnd)}, ${dbDone ? "hotová je" : "dokončíme ju"} ${formatDM(dbDate)} (o ${dbSlipDays} dní neskôr) a podľa pôvodného plánu mali byť k ${formatDM(STATUS_DATE)} hotové úlohy ${idRange(dueIds)}, hotové sú ${idRange(doneIds)}. Ďalší sklz pri #${nextOpenId} posunie koniec projektu za ${formatDMY(SCHEDULE_END)}, lebo rezerva je nulová.`,
     },
     {
       tag: "Riziko",
@@ -486,17 +581,23 @@ const time: FeasibilityBlock = {
     },
     {
       tag: "Riziko",
-      text: `Meranie KPI: 30-dňové okno pre KPI č. 3 (návrat návštevníkov) sa do harmonogramu zmestí, len ak meranie spustíme najneskôr ${formatDMY(latestKpiStart)} (${KPI_WINDOW_DAYS} dní do ${formatDMY(SCHEDULE_END)}); po pripojení databázy ${formatDMY(dbDate)} by sme mali len ${daysAfterDb} dní. Opatrenie: pridať analytiku čo najskôr – nezávisí od databázy.`,
+      text: kpiWindowMissed
+        ? `Meranie KPI: ${KPI_WINDOW_DAYS}-dňové okno pre KPI č. 3 (návrat návštevníkov) by sa do harmonogramu zmestilo, len keby meranie bežalo od ${formatDMY(latestKpiStart)} (${KPI_WINDOW_DAYS} dní do ${formatDMY(SCHEDULE_END)}); do konca projektu máme od ${formatDMY(dbDate)} najviac ${daysAfterDb} dní, takže KPI č. 3 vyhodnotíme len čiastočne. Opatrenie: pridať analytiku bez čakania na ďalšie úlohy – nezávisí od databázy.`
+        : `Meranie KPI: ${KPI_WINDOW_DAYS}-dňové okno pre KPI č. 3 (návrat návštevníkov) sa do harmonogramu zmestí, len ak meranie spustíme najneskôr ${formatDMY(latestKpiStart)} (${KPI_WINDOW_DAYS} dní do ${formatDMY(SCHEDULE_END)}); po pripojení databázy ${formatDMY(dbDate)} by sme mali len ${daysAfterDb} dní. Opatrenie: pridať analytiku čo najskôr – nezávisí od databázy.`,
     },
   ],
 };
 
 export const FEASIBILITY = {
-  intro: "Posudzujeme dve veci oddelene: webovú platformu s overením dopytu v rámci semestra a výrobu skutočného nápoja po semestri. Pri každej uvádzame, čo už máme, čo chýba a čo nás ohrozuje.",
-  blocks: [technicalWeb, technicalProduct, organizational, time] as FeasibilityBlock[],
+  intro: "Posudzujeme dve veci oddelene: webový koncept s ukážkovými objednávkami v rámci semestra a výrobu a predaj skutočného nápoja. Pri každej uvádzame, čo už máme, čo chýba a čo nás ohrozuje; výrobu posudzujeme aj finančne, lebo práve tam projekt narazil.",
+  blocks: [technicalWeb, technicalProduct, financial, organizational, time] as FeasibilityBlock[],
   overall: {
-    verdict: "Web TABU s predobjednávkami a meraním dopytu je v rámci semestra uskutočniteľný – technicky aj organizačne, časovo bez rezervy. Výroba skutočného nápoja je uskutočniteľná len podmienečne: nie je cieľom semestra a môže sa spustiť až po splnení podmienok nižšie.",
+    verdict: `Web TABU s ukážkovými objednávkami a meraním dopytu je v rámci semestra uskutočniteľný – technicky aj organizačne, časovo bez rezervy. Výrobu a predaj skutočného nápoja nebudeme realizovať: je finančne príliš náročná – už samotná cena hotovej plechovky od malého výrobcu zodpovedá ≈ ${canShareLow} – ${canShareHigh} % z čistého výnosu z ceny 2,90 €, najmenšia séria má ${MIN_BATCH_CANS} ks a tím nemá financovanie ani podnikateľský subjekt.`,
     constraints: [
+      {
+        title: "Financie (rozhodujúce)",
+        text: `Čistý výnos ≈ ${eur(netAfterTax)} na plechovku (odhad) zodpovedá cene hotovej plechovky od malého výrobcu (${eur(READY_CAN_LOW_EUR)} – ${eur(READY_CAN_HIGH_EUR)} za kus, bez dopravy) ${ref("plechovka")}, takže na dopravu, zálohu a ostatné nezostáva takmer nič; séria od ${MIN_BATCH_CANS} ks sa platí vopred; tím nemá rozpočet ani podnikateľský subjekt. Preto výrobu nerealizujeme.`,
+      },
       {
         title: "Receptúra a výroba",
         text: `Bez overenej receptúry a zazmluvneného výrobcu nie je čo predávať; najmenšia nami nájdená dávka plechoviek 330 ml je 500 ks ${ref("svachovka")}.`,
@@ -504,10 +605,6 @@ export const FEASIBILITY = {
       {
         title: "Regulácia",
         text: `Kofeín nad ${CAFFEINE_LIMIT_MG_PER_LITRE} mg/l znamená povinné upozornenie na obale a – pri sladenom nápoji – dvojnásobnú daň ${ref("eu1169", "tax")}; zdravotné tvrdenia na webe a obale; záloha 0,15 € na plechovku ${ref("tesco")}; návrh zákazu predaja osobám do 16 rokov a overovania veku v e-shopoch ${ref("bill")}, ktorý prešiel do druhého čítania ${ref("billStage")} – o jeho schválení sme ku dňu spracovania nenašli správu, stav treba pred predajom overiť.`,
-      },
-      {
-        title: "Cena a ekonomika",
-        text: `Ak je 2,90 € konečná cena s DPH, po odpočítaní DPH 23 % ${ref("vat")} zostane ${eur(netPrice)}; ak je nápoj sladený a má kofeín nad ${CAFFEINE_LIMIT_MG_PER_LITRE} mg/l, po odpočítaní dane ≈ ${eur(taxPerCan)} ${ref("tax")} už len ≈ ${eur(netAfterTax)} na plechovku (odhad) – a z toho ešte treba zaplatiť výrobu, plechovku, zálohu a distribúciu. Výrobné náklady zatiaľ nepoznáme.`,
       },
       {
         title: "Platformy",
@@ -518,26 +615,27 @@ export const FEASIBILITY = {
         text: "Nulová časová rezerva, nová a najrizikovejšia úloha je administrátorský panel; tím je študentský, bez podnikateľského subjektu a bez financovania.",
       },
     ],
+    conditionsTitle: "Čo by sa muselo zmeniť, aby sme výrobu prehodnotili",
     conditions: [
       {
         id: "G1",
-        title: "Dopyt",
-        text: "Všetky tri KPI dosiahnuté: priemerne > 4 ks na objednávku, konverzia ≥ 8 % a ≥ 20 % návratnosť do 30 dní.",
+        title: "Financovanie a podnikanie",
+        text: `Zdroj peňazí na prvú sériu (od ${MIN_BATCH_CANS} ks) a podnikateľský subjekt, vrátane kontroly názvu a ochrannej známky, textu o ochrane osobných údajov a prechodu na platené plány Vercel a Supabase.`,
       },
       {
         id: "G2",
         title: "Cena od výrobcu",
-        text: `Cenová ponuka na pilotnú dávku (od 500 ks, 330 ml) s jednotkovými nákladmi (výroba, plechovka, záloha, doprava) pod čistým výnosom ≈ ${eur(netAfterTax)} na plechovku; ak nie, cenu 2,90 € treba prehodnotiť.`,
+        text: `Cenová ponuka na pilotnú dávku (od ${MIN_BATCH_CANS} ks, 330 ml) s jednotkovými nákladmi (výroba, plechovka, záloha, doprava) pod čistým výnosom ≈ ${eur(netAfterTax)} na plechovku; ak nie, cenu 2,90 € treba prehodnotiť.`,
       },
       {
         id: "G3",
-        title: "Receptúra a označenie",
-        text: `Zvolená úroveň kofeínu (pod alebo nad ${CAFFEINE_LIMIT_MG_PER_LITRE} mg/l), nutričné hodnoty a upravené tvrdenia na obale aj na webe podľa nariadení (EÚ) č. 1169/2011 a (ES) č. 1924/2006.`,
+        title: "Dopyt",
+        text: "Všetky tri KPI dosiahnuté: priemerne > 4 ks na objednávku, konverzia ≥ 8 % a ≥ 20 % návratnosť do 30 dní.",
       },
       {
         id: "G4",
-        title: "Právo a prevádzka",
-        text: "Podnikateľský subjekt, kontrola názvu a ochrannej známky, text o ochrane osobných údajov a prechod na platené plány Vercel a Supabase pri reálnom predaji.",
+        title: "Receptúra a označenie",
+        text: `Zvolená úroveň kofeínu (pod alebo nad ${CAFFEINE_LIMIT_MG_PER_LITRE} mg/l), nutričné hodnoty a upravené tvrdenia na obale aj na webe podľa nariadení (EÚ) č. 1169/2011 a (ES) č. 1924/2006.`,
       },
     ],
   },

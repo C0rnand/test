@@ -49,14 +49,16 @@ const LABEL_COL = "w-[260px] sm:w-[300px]";
 export default function GanttChart() {
   const stats = scheduleStats();
   const ticks = axisTicks();
-  // zvislá čiara „Dnes“ stojí v strede aktuálneho dňa
+  // zvislá čiara „Stav k …“ stojí v strede dňa, ku ktorému platí stav úloh
   const todayPct = pctOf(dayIndex(STATUS_DATE) + 0.5);
   const currentIds = TASKS.filter((task) => task.status === "current").map((task) => `#${task.id}`);
+  const nextPlanned = TASKS.find((task) => task.status === "planned");
   const shiftedIds = stats.shiftedIds.map((id) => `#${id}`).join(", ");
 
   // prestávka na kritickej ceste medzi #5 a #6 (ak nejaká vznikla posunom)
   const task5 = TASKS.find((task) => task.id === 5);
   const task6 = TASKS.find((task) => task.id === 6);
+  const dbDone = task6?.status === "done";
   const gap =
     task5 && task6 && dayIndex(task6.start) - dayIndex(task5.end) > 1
       ? formatRange(addDays(task5.end, 1), addDays(task6.start, -1))
@@ -73,16 +75,22 @@ export default function GanttChart() {
             Rozdelenie úloh a časový plán vývoja – od inicializácie repozitára po nasadenie na
             produkčný server. Stav k {formatDMY(STATUS_DATE)}: {stats.doneCount} z {stats.total}{" "}
             úloh je hotových
-            {currentIds.length > 0 ? `, prebieha ${currentIds.join(", ")}` : ""}.
+            {currentIds.length > 0
+              ? `, prebieha ${currentIds.join(", ")}`
+              : nextPlanned
+                ? `, nasleduje #${nextPlanned.id}`
+                : ""}
+            .
           </p>
           {stats.shiftedIds.length > 0 && (
             <p className="mt-3 leading-relaxed text-forest-700">
-              Harmonogram sme posunuli: na cvičení 9. 11. prezentujeme nový dizajn a príchute a
-              databázu pripájame až po ňom, preto sa úlohy {shiftedIds} posúvajú približne o dva
-              týždne a projekt končí {formatDMY(SCHEDULE_END)} (pôvodne{" "}
-              {formatDMY(stats.originalEnd)}). {CRITICAL_PATH.length} z {stats.total} úloh tvorí
-              kritickú cestu; návrh databázy (#3) beží súbežne s vylepšovaním UI/UX a kritickú
-              cestu nepredlžuje.
+              Harmonogram sme posunuli: na cvičení 9. 11. sme prezentovali nový dizajn a príchute a
+              databázu {dbDone ? "sme pripojili" : "pripájame"} až po ňom
+              {task6 ? ` (${formatDM(task6.end)})` : ""}, preto sa úlohy {shiftedIds}{" "}
+              {dbDone ? "posunuli" : "posúvajú"} približne o dva týždne a projekt končí{" "}
+              {formatDMY(SCHEDULE_END)} (pôvodne {formatDMY(stats.originalEnd)}).{" "}
+              {CRITICAL_PATH.length} z {stats.total} úloh tvorí kritickú cestu; návrh databázy (#3)
+              beží súbežne s vylepšovaním UI/UX a kritickú cestu nepredlžuje.
             </p>
           )}
         </Reveal>
@@ -93,7 +101,7 @@ export default function GanttChart() {
           </p>
           <div className="mt-3 overflow-x-auto rounded-2xl border border-forest-100 bg-white p-6 lg:mt-12">
             <div className="min-w-[920px]">
-              {/* značka „Dnes“ */}
+              {/* značka „Stav k …“ */}
               <div className="flex pb-1">
                 <div className={`${LABEL_COL} shrink-0`} />
                 <div className="relative h-5 flex-1">
@@ -101,7 +109,7 @@ export default function GanttChart() {
                     className="absolute top-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-rose-600 px-2 py-1 text-[10px] font-semibold leading-none text-white"
                     style={{ left: `${todayPct}%` }}
                   >
-                    Dnes · {formatDM(STATUS_DATE)}
+                    Stav k {formatDM(STATUS_DATE)}
                   </span>
                 </div>
               </div>
@@ -173,7 +181,7 @@ export default function GanttChart() {
                           className={barClass(task)}
                         />
                       </div>
-                      {/* zvislá čiara „Dnes“ cez všetky riadky */}
+                      {/* zvislá čiara „Stav k …“ cez všetky riadky */}
                       <div
                         className="pointer-events-none absolute inset-y-0 w-px bg-rose-600/80"
                         style={{ left: `${todayPct}%` }}
@@ -217,7 +225,7 @@ export default function GanttChart() {
             </span>
             <span className="inline-flex items-center gap-2">
               <span className="h-3.5 w-0.5 rounded-full bg-rose-600" aria-hidden="true" />
-              Dnes
+              Stav k {formatDM(STATUS_DATE)}
             </span>
           </div>
           <p className="mt-3 text-xs text-forest-400">

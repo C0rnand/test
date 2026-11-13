@@ -8,7 +8,7 @@
  * Ako posunúť termín: zmeň `start` / `end` (a prípadne `status`) a pôvodný termín nechaj
  * v `baseline` – diagram potom sám ukáže, o koľko sa úloha posunula. Dátumy sa píšu ako
  * "RRRR-MM-DD" a `end` je POSLEDNÝ deň úlohy (vrátane). Rovnako zmeň STATUS_DATE, keď
- * aktualizuješ stav (zvislá čiara „Dnes“ v diagrame).
+ * aktualizuješ stav (zvislá čiara „Stav k …“ v diagrame).
  */
 
 export type TaskStatus = "done" | "current" | "planned";
@@ -33,8 +33,13 @@ export interface ScheduleTask extends DateRange {
   baseline?: DateRange;
 }
 
-/** Dátum, ku ktorému platí stav úloh (v diagrame zvislá čiara „Dnes“). */
-export const STATUS_DATE = "2026-11-12";
+/**
+ * Dátum, ku ktorému platí stav úloh (v diagrame zvislá čiara „Stav k …“). Teraz 23. 11. 2026:
+ * diagram ukazuje projekt, akoby bolo hotové všetko po tento dátum (úlohy #1 – #6, vrátane
+ * pripojenia databázy). Ak chceš ukázať skutočný dnešný stav, vráť sem dnešný dátum a úlohe #6
+ * nastav `status: "current"`.
+ */
+export const STATUS_DATE = "2026-11-23";
 
 export const TASKS: ScheduleTask[] = [
   {
@@ -93,8 +98,8 @@ export const TASKS: ScheduleTask[] = [
       "Vytvorenie serverových ciest a reálne prepojenie nakódovaného frontendu s databázou.",
     start: "2026-11-09",
     end: "2026-11-23",
-    status: "current",
-    note: "nadväzuje na #5 · pripojenie databázy 23. 11.",
+    status: "done",
+    note: "nadväzuje na #5 · databáza pripojená 23. 11.",
     baseline: { start: "2026-10-26", end: "2026-11-08" },
   },
   {
@@ -229,7 +234,7 @@ export function scheduleStats() {
     .slice(-1)[0];
 
   // úlohy, ktoré mali byť podľa pôvodného plánu k STATUS_DATE už hotové
-  const dueByBaseline = TASKS.filter((task) => (task.baseline?.end ?? task.end) < STATUS_DATE);
+  const dueByBaseline = TASKS.filter((task) => (task.baseline?.end ?? task.end) <= STATUS_DATE);
 
   // dni práce, ktoré zostávajú po STATUS_DATE, v každej nehotovej úlohe
   const firstOpenDay = dayIndex(STATUS_DATE) + 1;

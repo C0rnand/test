@@ -1,8 +1,10 @@
 import Reveal from "./Reveal";
 import {
   BUSINESS_CASE,
+  DECISION,
   FEASIBILITY,
   META,
+  PDF_DOWNLOAD,
   SOURCES,
   type FeasibilityBlock,
   type ItemTag,
@@ -21,6 +23,7 @@ const TAG_STYLES: Record<ItemTag, string> = {
 const VERDICT_STYLES: Record<Tone, string> = {
   ok: "bg-emerald-500 text-forest-950",
   conditional: "bg-amber-400 text-forest-950",
+  no: "bg-rose-600 text-white",
 };
 
 const AUDIENCE_STYLES = {
@@ -118,6 +121,19 @@ export default function BusinessCase() {
             {META.title}
           </h2>
           <p className="mt-5 leading-relaxed text-forest-700">{META.lead}</p>
+        </Reveal>
+
+        {/* ---------------------------- Rozhodnutie tímu ---------------------------- */}
+        <Reveal className="mt-8 max-w-3xl">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 sm:p-7">
+            <p className="text-xs font-semibold uppercase tracking-widest text-rose-700">
+              {DECISION.label}
+            </p>
+            <p className="mt-2 font-display text-xl font-semibold leading-snug text-forest-950 sm:text-2xl">
+              {DECISION.title}
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-forest-700">{DECISION.text}</p>
+          </div>
         </Reveal>
 
         {/* ------------------------------ A. Business case ------------------------------ */}
@@ -327,7 +343,7 @@ export default function BusinessCase() {
             </div>
 
             <p className="mt-8 text-xs font-semibold uppercase tracking-widest text-forest-500">
-              Podmienky, aby sme mohli ísť do výroby (go / no-go)
+              {overall.conditionsTitle}
             </p>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
               {overall.conditions.map((condition) => (
@@ -374,6 +390,40 @@ export default function BusinessCase() {
               </li>
             ))}
           </ol>
+        </Reveal>
+
+        {/* ------------------------- PDF – úplne na konci Zadaní ------------------------- */}
+        <Reveal className="mt-14">
+          <div className="flex flex-col gap-5 rounded-2xl border border-forest-100 bg-forest-50 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+            <div className="max-w-xl">
+              <p className="font-display text-lg font-semibold text-forest-950">
+                {PDF_DOWNLOAD.title}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-forest-600">{PDF_DOWNLOAD.text}</p>
+            </div>
+            <a
+              href={PDF_DOWNLOAD.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-forest-950 px-7 py-3.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 hover:bg-forest-800"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+                <path d="M14 3v5h5" />
+                <path d="M9 13h6M9 17h4" />
+              </svg>
+              {PDF_DOWNLOAD.button}
+            </a>
+          </div>
         </Reveal>
       </div>
     </section>
